@@ -1,19 +1,21 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, { useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import FastImage from 'react-native-fast-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
+// import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
 import { Text, View, Keyboard, TouchableOpacity } from 'react-native';
 
 import { AuthApi } from '@api/auth';
-import { IconLibrary } from '@components/base';
+// import { IconLibrary } from '@components/base';
 import Input from '@components/authentication/input';
 import { showMessage, setStorage } from '@utils/index';
 import AuthButton from '@components/authentication/button';
 import { setAppStatus, setIsLoading } from '@stores/action';
+// import { IconGoogle, IconFacebook } from '@assets/icons/index';
 import TemplateLogin from '@components/authentication/templateLogin';
 import { InputLanguage } from '@components/authentication/inputLanguage';
-import { IconGoogle, IconFacebook, DefaltLogo } from '@assets/icons/index';
 import { authenticationStyle as styles } from '@styles/authentication.style';
 
 export default function Login({ navigation }: any) {
@@ -51,58 +53,70 @@ export default function Login({ navigation }: any) {
     }
   };
 
-  const onLoginFacebook = async () => {
-    try {
-      const result = await LoginManager.logInWithPermissions([
-        'public_profile',
-        'email',
-      ]);
-      if (result.isCancelled) {
-        return;
-      }
-      console.log(JSON.stringify(result, null, 2));
-      const data = await AccessToken.getCurrentAccessToken();
-      if (!data) {
-        return;
-      }
-      let accessToken: any = data.accessToken;
-      console.log(JSON.stringify(data, null, 2));
-      dispatch(setIsLoading(true));
-      const dataLogin = await AuthApi.LoginFacebook({ accessToken });
-      if (dataLogin?.data?.accessToken && dataLogin?.data?.refreshToken) {
-        await setStorage('accessToken', dataLogin.data.accessToken);
-        await setStorage('refreshToken', dataLogin.data.refreshToken);
-        dispatch(setAppStatus(3));
-      } else {
-        showMessage.fail(t('login_failed'));
-      }
-    } catch (error) {
-      if (__DEV__) {
-        console.error('Facebook login error:', error);
-      }
-    } finally {
-      dispatch(setIsLoading(false));
-    }
-  };
+  // const onLoginFacebook = async () => {
+  //   try {
+  //     const result = await LoginManager.logInWithPermissions([
+  //       'public_profile',
+  //       'email',
+  //     ]);
+  //     if (result.isCancelled) {
+  //       return;
+  //     }
+  //     const data = await AccessToken.getCurrentAccessToken();
+  //     if (!data) {
+  //       return;
+  //     }
+  //     let accessToken: any = data.accessToken;
+  //     console.log(JSON.stringify(data, null, 2));
+  //     dispatch(setIsLoading(true));
+  //     const dataLogin = await AuthApi.LoginFacebook({ accessToken });
+  //     if (dataLogin?.data?.accessToken && dataLogin?.data?.refreshToken) {
+  //       await setStorage('accessToken', dataLogin.data.accessToken);
+  //       await setStorage('refreshToken', dataLogin.data.refreshToken);
+  //       dispatch(setAppStatus(3));
+  //     } else {
+  //       showMessage.fail(t('login_failed'));
+  //     }
+  //   } catch (error) {
+  //     if (__DEV__) {
+  //       console.error('Facebook login error:', error);
+  //     }
+  //   } finally {
+  //     dispatch(setIsLoading(false));
+  //   }
+  // };
 
-  const onLoginGoogle = async () => {};
+  // const onLoginGoogle = async () => {};
 
-  const onLoginGust = async () => {
-    dispatch(setAppStatus(3));
-  };
+  // const onLoginGust = async () => {
+  //   dispatch(setAppStatus(3));
+  // };
 
   return (
     <TemplateLogin>
       <SafeAreaView style={styles.containerSpanish}>
         <View style={styles.formLogin}>
           <InputLanguage />
-          <DefaltLogo />
-          <Text style={styles.titleAuth}>{t('sign_in')}</Text>
+          <FastImage
+            style={{ width: 150, height: 150, alignSelf: 'center' }}
+            source={require('@assets/images/app_logo.jpeg')}
+            resizeMode={FastImage.resizeMode.contain}
+          />
+          <Text style={styles.titleAuth}>{t('welcome_back')}</Text>
+          <Text style={styles.subTitleAuth}>{t('please_login_below')}</Text>
+          <View style={styles.registerArea}>
+            <Text style={styles.txtNewTo}>{t('no_account')}?</Text>
+            <TouchableOpacity
+              onPress={() => navigation.replace('RegisterScreen')}
+            >
+              <Text style={styles.txtRegister}>{t('sign_up')}</Text>
+            </TouchableOpacity>
+          </View>
           <Input
             ref={usernameRef}
             returnKeyType="next"
             iconName="email-outline"
-            placeholder={t('email_mkh')}
+            placeholder={t('email')}
             onSubmitEditing={() => passwordRef.current.focus()}
           />
           <Input
@@ -113,14 +127,14 @@ export default function Login({ navigation }: any) {
             onSubmitEditing={onLogin}
             password
           />
+          <AuthButton title={t('sign_in')} onPress={onLogin} />
           <TouchableOpacity
             activeOpacity={0.5}
             onPress={() => navigation.navigate('VerifyMailScreen')}
           >
             <Text style={styles.txtForgetPass}>{t('forgot_password')}?</Text>
           </TouchableOpacity>
-          <AuthButton title={t('sign_in')} onPress={onLogin} />
-          <Text style={styles.txtLoginWith}>{t('login_with')}</Text>
+          {/* <Text style={styles.txtLoginWith}>{t('login_with')}</Text>
           <View style={styles.loginWith}>
             <TouchableOpacity
               onPress={onLoginGoogle}
@@ -148,15 +162,7 @@ export default function Login({ navigation }: any) {
                 color={'black'}
               />
             </TouchableOpacity>
-          </View>
-        </View>
-        <View style={styles.registerArea}>
-          <Text style={styles.txtNewTo}>{t('do_not_have_an_account')}</Text>
-          <TouchableOpacity
-            onPress={() => navigation.replace('RegisterScreen')}
-          >
-            <Text style={styles.txtRegister}>{t('register_now')}</Text>
-          </TouchableOpacity>
+          </View> */}
         </View>
       </SafeAreaView>
     </TemplateLogin>

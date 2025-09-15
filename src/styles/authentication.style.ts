@@ -70,7 +70,7 @@ export const authenticationStyle: any = {
     alignItems: 'center',
     marginTop: normalize(10),
     width: '95%',
-    borderRadius: normalize(12),
+    borderRadius: normalize(24),
     backgroundColor: disable ? color.DUSTY_GRAY : color.MAIN,
   }),
   textButton: {
@@ -81,10 +81,10 @@ export const authenticationStyle: any = {
     color: '#ffffff',
   },
   txtForgetPass: {
-    fontFamily: themeStyle.FONT_FAMILY,
+    fontFamily: themeStyle.FONT_BOLD,
     color: color.PICTON_BLUE,
-    textAlign: 'right',
-    paddingBottom: normalize(20),
+    textAlign: "center",
+    paddingTop: normalize(20),
     fontSize: 16,
   },
   txtLoginWith: {
@@ -97,8 +97,8 @@ export const authenticationStyle: any = {
   registerArea: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: normalize(10),
-    marginBottom: normalize(10),
+    marginTop: normalize(20),
+    marginBottom: normalize(20),
   },
   txtNewTo: {fontFamily: themeStyle.FONT_FAMILY, fontSize: 16},
   txtRegister: {
@@ -216,9 +216,17 @@ export const authenticationStyle: any = {
     fontFamily: themeStyle.FONT_BOLD,
     fontWeight: 'bold',
     fontSize: 20,
-    marginBottom: normalize(30),
+    // marginBottom: normalize(30),
     // marginTop: normalize(20),
-    textAlign: 'left',
+    textAlign: 'center',
+  },
+  subTitleAuth: {
+    fontFamily: themeStyle.FONT_FAMILY,
+    fontSize: 16,
+    // marginBottom: normalize(30),
+    // marginTop: normalize(20),
+    textAlign: 'center',
+    marginTop: normalize(15),
   },
   titleRegister: {
     fontFamily: themeStyle.FONT_BOLD,

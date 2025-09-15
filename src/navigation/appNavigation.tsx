@@ -43,7 +43,7 @@ export const AppNavigation = () => {
   useEffect(() => {
     isFirstUse
       ? dispatch(setAppStatus(APP_STATUS.AUTH))
-      : dispatch(setAppStatus(APP_STATUS.APP));
+      : dispatch(setAppStatus(APP_STATUS.AUTH));
   }, [isFirstUse, dispatch]);
 
   useEffect(() => {
