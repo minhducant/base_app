@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Settings } from 'react-native-fbsdk-next';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -42,6 +43,11 @@ export const AppNavigation = () => {
       ? dispatch(setAppStatus(APP_STATUS.AUTH))
       : dispatch(setAppStatus(APP_STATUS.APP));
   }, [isFirstUse, dispatch]);
+
+  useEffect(() => {
+    Settings.initializeSDK();
+    Settings.setAdvertiserTrackingEnabled(true);
+  }, []);
 
   return (
     <NavigationContainer ref={navigationRef}>

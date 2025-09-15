@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {LoginManager, AccessToken} from 'react-native-fbsdk-next';
+import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
 import { Text, View, Keyboard, TouchableOpacity } from 'react-native';
 
 import { AuthApi } from '@api/auth';
@@ -67,9 +67,13 @@ export default function Login({ navigation }: any) {
       let accessToken: any = data.accessToken;
       dispatch(setIsLoading(true));
       const dataLogin = await AuthApi.LoginFacebook({ accessToken });
-      await setStorage('accessToken', dataLogin.data.accessToken);
-      await setStorage('refreshToken', dataLogin.data.refreshToken);
-      dispatch(setAppStatus(3));
+      if (dataLogin?.data?.accessToken && dataLogin?.data?.refreshToken) {
+        await setStorage('accessToken', dataLogin.data.accessToken);
+        await setStorage('refreshToken', dataLogin.data.refreshToken);
+        dispatch(setAppStatus(3));
+      } else {
+        showMessage.fail(t('login_failed'));
+      }
     } catch (error) {
       if (__DEV__) {
         console.error('Facebook login error:', error);

@@ -29,12 +29,14 @@
 			</array>
 		</dict>
 	</array>
-	<key>CFBundleVersion</key>
-	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>FacebookAppID</key>
 	<string>818310977228005</string>
+	<key>FacebookClientToken</key>
+	<string>59360c55b96464fd3c19554853a6a03c</string>
 	<key>FacebookDisplayName</key>
 	<string>Test Đăng nhập</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>fbapi</string>

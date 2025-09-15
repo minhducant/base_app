@@ -1,24 +1,13 @@
-import React, {useEffect, useRef} from 'react';
-import {StyleSheet} from 'react-native';
-import {Modal} from 'react-native-paper';
-import LottieView from 'lottie-react-native';
-import normalize from 'react-native-normalize';
-import {useSelector, useDispatch} from 'react-redux';
+import React from 'react';
+// import normalize from 'react-native-normalize';
+import { useSelector, useDispatch } from 'react-redux';
+import { StyleSheet, ActivityIndicator, Modal, View } from 'react-native';
 
-import {setIsLoading} from '@stores/action';
+import { setIsLoading } from '@stores/action';
 
 const ModalLoadingLottie = () => {
   const dispatch = useDispatch();
-  const lottieRef = useRef<any>(null);
-  const isLoading = useSelector((state: any) => state.Config.isLoading);
-
-  useEffect(() => {
-    if (isLoading) {
-      lottieRef.current?.play();
-    } else {
-      lottieRef.current?.reset();
-    }
-  }, [isLoading]);
+  const isLoading = useSelector((state: any) => state.user.isLoading);
 
   const handleCloseModal = () => {
     dispatch(setIsLoading(false));
@@ -26,14 +15,14 @@ const ModalLoadingLottie = () => {
 
   return (
     <Modal
-      contentContainerStyle={stylesLoading.modal}
       visible={isLoading}
-      onDismiss={handleCloseModal}>
-      <LottieView
-        ref={lottieRef}
-        source={require('@assets/lottie/Animation.json')}
-        style={stylesLoading.lottieView}
-      />
+      transparent={true}
+      animationType="fade"
+      onDismiss={handleCloseModal}
+    >
+      <View style={stylesLoading.modalView}>
+        <ActivityIndicator />
+      </View>
     </Modal>
   );
 };
@@ -48,8 +37,19 @@ const stylesLoading = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: 10,
   },
-  lottieView: {
-    width: normalize(60),
-    height: normalize(60),
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
 });
