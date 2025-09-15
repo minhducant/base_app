@@ -7,12 +7,11 @@ import {
   Text,
   View,
   Platform,
-  SafeAreaView,
   KeyboardAvoidingView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {AuthApi} from '@api/auth';
-// import {AppImage} from '@assets/image';
 import {showMessage} from '@utils/index';
 import {setIsLoading} from '@stores/action';
 import Input from '@components/authentication/input';

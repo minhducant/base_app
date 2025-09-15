@@ -60,11 +60,13 @@ export default function Login({ navigation }: any) {
       if (result.isCancelled) {
         return;
       }
+      console.log(JSON.stringify(result, null, 2));
       const data = await AccessToken.getCurrentAccessToken();
       if (!data) {
         return;
       }
       let accessToken: any = data.accessToken;
+      console.log(JSON.stringify(data, null, 2));
       dispatch(setIsLoading(true));
       const dataLogin = await AuthApi.LoginFacebook({ accessToken });
       if (dataLogin?.data?.accessToken && dataLogin?.data?.refreshToken) {

@@ -13,6 +13,7 @@ import RegisterScreen from '@screens/auth/Register';
 import ResetPassScreen from '@screens/auth/ResetPass';
 import VerifyMailScreen from '@screens/auth/VerifyMail';
 import VerifyCodeScreen from '@screens/auth/VerifyCode';
+import ForgetPassScreen from '@screens/auth/ForgetPass';
 
 import HomeScreen from '@screens/home/index';
 
@@ -29,6 +30,7 @@ const AuthStack = () => (
     <AuthStackNav.Screen name="LoginScreen" component={LoginScreen} />
     <AuthStackNav.Screen name="ResetPassScreen" component={ResetPassScreen} />
     <AuthStackNav.Screen name="RegisterScreen" component={RegisterScreen} />
+    <AuthStackNav.Screen name="ForgetPassScreen" component={ForgetPassScreen} />
     <AuthStackNav.Screen name="VerifyMailScreen" component={VerifyMailScreen} />
     <AuthStackNav.Screen name="VerifyCodeScreen" component={VerifyCodeScreen} />
   </AuthStackNav.Navigator>
