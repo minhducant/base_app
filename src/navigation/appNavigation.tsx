@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
-import { Settings } from 'react-native-fbsdk-next';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { setAppStatus } from '@stores/action';
+import { checkAppTracking } from '@utils/permissions';
 import { navigationRef } from '@navigation/rootNavigation';
 
 import LoginScreen from '@screens/auth/Login';
@@ -47,8 +47,7 @@ export const AppNavigation = () => {
   }, [isFirstUse, dispatch]);
 
   useEffect(() => {
-    Settings.initializeSDK();
-    Settings.setAdvertiserTrackingEnabled(true);
+    checkAppTracking();
   }, []);
 
   return (

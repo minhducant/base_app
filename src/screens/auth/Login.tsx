@@ -4,8 +4,8 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import FastImage from 'react-native-fast-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
 import { Text, View, Keyboard, TouchableOpacity } from 'react-native';
+import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
 
 import { AuthApi } from '@api/auth';
 // import { IconLibrary } from '@components/base';
@@ -38,7 +38,7 @@ export default function Login({ navigation }: any) {
       return;
     }
     const data: any = await AuthApi.Login({ password, email });
-    console.log(data)
+    console.log(data);
     if (data?.code === 200) {
       if (data?.data?.first_login) {
         navigation.navigate('SecurityScreen', {
@@ -71,7 +71,6 @@ export default function Login({ navigation }: any) {
         return;
       }
       let accessToken: any = data.accessToken;
-      console.log(JSON.stringify(data, null, 2));
       dispatch(setIsLoading(true));
       const dataLogin = await AuthApi.LoginFacebook({ accessToken });
       if (dataLogin?.data?.accessToken && dataLogin?.data?.refreshToken) {

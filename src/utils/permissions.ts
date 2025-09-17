@@ -1,5 +1,6 @@
-import {Platform, Linking} from 'react-native';
-import {check, PERMISSIONS, RESULTS, request} from 'react-native-permissions';
+import { Platform, Linking } from 'react-native';
+import { Settings } from 'react-native-fbsdk-next';
+import { check, PERMISSIONS, RESULTS, request } from 'react-native-permissions';
 
 const checkRequest = async (permission: any) => {
   try {
@@ -63,4 +64,24 @@ export const checkWriteFile = async () => {
   } catch (error) {
     console.warn(error);
   }
+};
+
+export const checkAppTracking = async () => {
+  try {
+    if (Platform.OS === 'ios') {
+      Settings.initializeSDK();
+      const result = await check(PERMISSIONS.IOS.APP_TRACKING_TRANSPARENCY);
+      if (result === RESULTS.DENIED) {
+        const newStatus = await request(
+          PERMISSIONS.IOS.APP_TRACKING_TRANSPARENCY,
+        );
+        Settings.setAdvertiserTrackingEnabled(newStatus === RESULTS.GRANTED);
+      } else {
+        Settings.setAdvertiserTrackingEnabled(result === RESULTS.GRANTED);
+      }
+    } else {
+      Settings.initializeSDK();
+      Settings.setAdvertiserTrackingEnabled(true);
+    }
+  } catch (error) {}
 };
