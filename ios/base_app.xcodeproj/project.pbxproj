@@ -342,8 +342,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = base_app/base_app.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5L4JL2V6VP;
+				DEVELOPMENT_TEAM = 4VAX9QMXA6;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = base_app/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = EcoMove;
@@ -359,8 +361,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.ecomove;
+				PRODUCT_BUNDLE_IDENTIFIER = com.antstudio.ecomove;
 				PRODUCT_NAME = EcoMove;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -374,8 +377,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = base_app/base_app.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5L4JL2V6VP;
+				DEVELOPMENT_TEAM = 4VAX9QMXA6;
 				INFOPLIST_FILE = base_app/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = EcoMove;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.shopping";
@@ -390,8 +395,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.ecomove;
+				PRODUCT_BUNDLE_IDENTIFIER = com.antstudio.ecomove;
 				PRODUCT_NAME = EcoMove;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
