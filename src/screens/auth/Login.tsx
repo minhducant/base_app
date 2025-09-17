@@ -38,7 +38,6 @@ export default function Login({ navigation }: any) {
       return;
     }
     const data: any = await AuthApi.Login({ password, email });
-    console.log(data);
     if (data?.code === 200) {
       if (data?.data?.first_login) {
         navigation.navigate('SecurityScreen', {
