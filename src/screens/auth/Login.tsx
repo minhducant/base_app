@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import FastImage from 'react-native-fast-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
+import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
 import { Text, View, Keyboard, TouchableOpacity } from 'react-native';
 
 import { AuthApi } from '@api/auth';
@@ -13,7 +13,10 @@ import Input from '@components/authentication/input';
 import { showMessage, setStorage } from '@utils/index';
 import AuthButton from '@components/authentication/button';
 import { setAppStatus, setIsLoading } from '@stores/action';
-// import { IconGoogle, IconFacebook } from '@assets/icons/index';
+import {
+  // IconGoogle,
+  IconFacebook,
+} from '@assets/icons/index';
 import TemplateLogin from '@components/authentication/templateLogin';
 import { InputLanguage } from '@components/authentication/inputLanguage';
 import { authenticationStyle as styles } from '@styles/authentication.style';
@@ -35,6 +38,7 @@ export default function Login({ navigation }: any) {
       return;
     }
     const data: any = await AuthApi.Login({ password, email });
+    console.log(data)
     if (data?.code === 200) {
       if (data?.data?.first_login) {
         navigation.navigate('SecurityScreen', {
@@ -53,38 +57,38 @@ export default function Login({ navigation }: any) {
     }
   };
 
-  // const onLoginFacebook = async () => {
-  //   try {
-  //     const result = await LoginManager.logInWithPermissions([
-  //       'public_profile',
-  //       'email',
-  //     ]);
-  //     if (result.isCancelled) {
-  //       return;
-  //     }
-  //     const data = await AccessToken.getCurrentAccessToken();
-  //     if (!data) {
-  //       return;
-  //     }
-  //     let accessToken: any = data.accessToken;
-  //     console.log(JSON.stringify(data, null, 2));
-  //     dispatch(setIsLoading(true));
-  //     const dataLogin = await AuthApi.LoginFacebook({ accessToken });
-  //     if (dataLogin?.data?.accessToken && dataLogin?.data?.refreshToken) {
-  //       await setStorage('accessToken', dataLogin.data.accessToken);
-  //       await setStorage('refreshToken', dataLogin.data.refreshToken);
-  //       dispatch(setAppStatus(3));
-  //     } else {
-  //       showMessage.fail(t('login_failed'));
-  //     }
-  //   } catch (error) {
-  //     if (__DEV__) {
-  //       console.error('Facebook login error:', error);
-  //     }
-  //   } finally {
-  //     dispatch(setIsLoading(false));
-  //   }
-  // };
+  const onLoginFacebook = async () => {
+    try {
+      const result = await LoginManager.logInWithPermissions([
+        'public_profile',
+        'email',
+      ]);
+      if (result.isCancelled) {
+        return;
+      }
+      const data = await AccessToken.getCurrentAccessToken();
+      if (!data) {
+        return;
+      }
+      let accessToken: any = data.accessToken;
+      console.log(JSON.stringify(data, null, 2));
+      dispatch(setIsLoading(true));
+      const dataLogin = await AuthApi.LoginFacebook({ accessToken });
+      if (dataLogin?.data?.accessToken && dataLogin?.data?.refreshToken) {
+        await setStorage('accessToken', dataLogin.data.accessToken);
+        await setStorage('refreshToken', dataLogin.data.refreshToken);
+        dispatch(setAppStatus(3));
+      } else {
+        showMessage.fail(t('login_failed'));
+      }
+    } catch (error) {
+      if (__DEV__) {
+        console.error('Facebook login error:', error);
+      }
+    } finally {
+      dispatch(setIsLoading(false));
+    }
+  };
 
   // const onLoginGoogle = async () => {};
 
@@ -134,8 +138,8 @@ export default function Login({ navigation }: any) {
           >
             <Text style={styles.txtForgetPass}>{t('forgot_password')}?</Text>
           </TouchableOpacity>
-          {/* <Text style={styles.txtLoginWith}>{t('login_with')}</Text>
-          <View style={styles.loginWith}>
+          <Text style={styles.txtLoginWith}>{t('or')}</Text>
+          {/* <View style={styles.loginWith}>
             <TouchableOpacity
               onPress={onLoginGoogle}
               activeOpacity={0.5}
@@ -163,6 +167,14 @@ export default function Login({ navigation }: any) {
               />
             </TouchableOpacity>
           </View> */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={[styles.loginFacebook]}
+            onPress={onLoginFacebook}
+          >
+            <IconFacebook />
+            <Text style={styles.txtLoginFB}>{t('login_with_facebook')}</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     </TemplateLogin>

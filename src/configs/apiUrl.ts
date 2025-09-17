@@ -1,6 +1,6 @@
 export const API_PREFIX = '/api/v1';
-// export const MAIN_DOMAIN = 'https:?//apicrm.hallo.co';
-export const MAIN_DOMAIN = 'http://192.168.1.178:3003';
+export const MAIN_DOMAIN = 'http://172.104.189.80:3003';
+// export const MAIN_DOMAIN = 'http://192.168.1.204:3003';
 
 export const ApiUrl = {
   auth: {

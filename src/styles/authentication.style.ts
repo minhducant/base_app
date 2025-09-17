@@ -1,4 +1,4 @@
-import {ViewStyle} from 'react-native';
+import { ViewStyle } from 'react-native';
 import normalize from 'react-native-normalize';
 
 import color from '@styles/color';
@@ -14,7 +14,7 @@ export const authenticationStyle: any = {
   containerSpanish: {
     flex: 1,
     backgroundColor: color.WHITE,
-    paddingTop:0,
+    paddingTop: 0,
   },
   formLogin: {
     flex: 1,
@@ -83,7 +83,7 @@ export const authenticationStyle: any = {
   txtForgetPass: {
     fontFamily: themeStyle.FONT_BOLD,
     color: color.PICTON_BLUE,
-    textAlign: "center",
+    textAlign: 'center',
     paddingTop: normalize(20),
     fontSize: 16,
   },
@@ -100,7 +100,7 @@ export const authenticationStyle: any = {
     marginTop: normalize(20),
     marginBottom: normalize(20),
   },
-  txtNewTo: {fontFamily: themeStyle.FONT_FAMILY, fontSize: 16},
+  txtNewTo: { fontFamily: themeStyle.FONT_FAMILY, fontSize: 16 },
   txtRegister: {
     fontFamily: themeStyle.FONT_FAMILY,
     color: color.PICTON_BLUE,
@@ -284,5 +284,24 @@ export const authenticationStyle: any = {
     alignItems: 'center',
     backgroundColor: color.WHITE,
     marginTop: normalize(20),
+  },
+  loginFacebook: {
+    borderColor: color.SILVER,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    flexDirection: 'row',
+    padding: normalize(5),
+    marginBottom: normalize(20),
+    borderRadius: normalize(12),
+    width: '95%',
+    alignSelf: 'center',
+  },
+  txtLoginFB: {
+    paddingLeft: normalize(8),
+    alignSelf: 'center',
+    fontFamily: themeStyle.FONT_FAMILY,
+    fontSize: 16,
+    textAlign: 'center',
   },
 };
