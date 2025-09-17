@@ -29,7 +29,7 @@ const VerifyMailScreen = ({ navigation }: any) => {
     if (isValidEmail(email)) {
       const data: any = await AuthApi.ForgotPassword({ email });
       if (data.code === 200) {
-        navigation.navigate('ForgetPassScreen', {
+        navigation.navigate('VerifyCodeScreen', {
           email: email,
           type: 'forget',
         });
