@@ -1,10 +1,10 @@
-import React, {Ref} from 'react';
+import React, { Ref } from 'react';
 import normalize from 'react-native-normalize';
-import {View, TextInput, StyleSheet, TouchableOpacity} from 'react-native';
+import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 
 import COLORS from '@styles/color';
 import theme from '@styles/theme.style';
-import {IconLibrary} from '@components/base/iconLibrary';
+import { IconLibrary } from '@components/base/iconLibrary';
 
 interface InputProps {
   iconName: string;
@@ -16,9 +16,10 @@ interface InputProps {
   onSubmitEditing?: any;
   ref: Ref<any>;
   autoFocus?: boolean;
+  onChangeText?: (text: string) => void;
 }
 
-const Input: React.FC<InputProps> = React.forwardRef(
+const InputLocation: React.FC<InputProps> = React.forwardRef(
   (
     {
       iconName,
@@ -29,12 +30,13 @@ const Input: React.FC<InputProps> = React.forwardRef(
       placeholder,
       onSubmitEditing,
       autoFocus,
+      onChangeText = () => {},
     },
     ref,
   ) => {
     const textInputRef = React.useRef<any>(null);
     const [value, setValue] = React.useState('');
-    const [hidePassword, setHidePassword] = React.useState(password);
+    const [isFocused, setIsFocused] = React.useState(false);
 
     React.useImperativeHandle(ref, () => ({
       focus: () => {
@@ -58,10 +60,12 @@ const Input: React.FC<InputProps> = React.forwardRef(
             style.inputContainer,
             {
               alignItems: 'center',
+              borderColor: isFocused ? COLORS.MAIN : COLORS.SILVER,
             },
-          ]}>
+          ]}
+        >
           <IconLibrary
-            library="MaterialCommunityIcons"
+            library="MaterialIcons"
             name={iconName}
             size={22}
             color={COLORS.MAIN}
@@ -76,36 +80,42 @@ const Input: React.FC<InputProps> = React.forwardRef(
             onChangeText={setValue}
             onPressIn={() => onPressIn()}
             onFocus={() => {
+              setIsFocused(true);
               onFocus();
             }}
+            onChange={() => onChangeText(value)}
+            onBlur={() => setIsFocused(false)}
             autoFocus={autoFocus}
             onSubmitEditing={onSubmitEditing}
             placeholder={placeholder}
             returnKeyType={returnKeyType}
-            secureTextEntry={hidePassword}
-            placeholderTextColor={COLORS.DUSTY_GRAY} 
+            placeholderTextColor={COLORS.DUSTY_GRAY}
             autoCapitalize="none"
             style={{
-              // color: COLORS.darkBlue,
               flex: 1,
               fontSize: 16,
               fontFamily: theme.FONT_FAMILY,
             }}
           />
-          {password && (
-            <TouchableOpacity onPress={() => setHidePassword(!hidePassword)}>
-              <IconLibrary
-                library="MaterialCommunityIcons"
-                name={hidePassword ? 'eye-outline' : 'eye-off-outline'}
-                style={{
-                  marginLeft: normalize(10),
-                  backgroundColor: 'transparent',
-                }}
-                size={22}
-                color={COLORS.BLACK}
-              />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            onPress={() => setValue('')}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <IconLibrary
+              library="AntDesign"
+              name="close"
+              style={{
+                marginLeft: normalize(10),
+                backgroundColor: 'transparent',
+              }}
+              size={22}
+              color={COLORS.SILVERC4}
+            />
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -114,7 +124,7 @@ const Input: React.FC<InputProps> = React.forwardRef(
 
 const style = StyleSheet.create({
   label: {
-    marginBottom: normalize(10),
+    marginTop: normalize(16),
     fontSize: 14,
     fontFamily: theme.FONT_FAMILY,
   },
@@ -122,9 +132,9 @@ const style = StyleSheet.create({
     height: normalize(50),
     flexDirection: 'row',
     paddingHorizontal: 15,
-    borderWidth: 1,
+    borderWidth: 2,
     borderRadius: normalize(10),
-    marginBottom: normalize(20),
+    marginTop: normalize(16),
     backgroundColor: COLORS.WHITE,
     borderColor: COLORS.SILVER,
     width: '100%',
@@ -132,4 +142,4 @@ const style = StyleSheet.create({
   },
 });
 
-export default Input;
+export default InputLocation;

@@ -6,7 +6,6 @@ import { USER_LANG, getDeviceLang, DataLanguage } from '@utils/deviceLang';
 
 import en from './en.json';
 import vi from './vi.json';
-import jp from './jp.json';
 
 const languageDetector: any = {
   init: Function.prototype,
@@ -28,7 +27,6 @@ const languageDetector: any = {
 const resources = {
   en: { translation: en },
   vi: { translation: vi },
-  jp: { translation: jp },
 };
 
 const fallbackLanguage = { languageTag: 'vi' };

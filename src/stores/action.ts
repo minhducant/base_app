@@ -1,8 +1,4 @@
-import {
-  setRole,
-  setAccessToken,
-  setRefreshToken,
-} from './auth/store';
+import { setRole, setAccessToken, setRefreshToken } from './auth/store';
 
 import {
   setUserInfo,
@@ -13,16 +9,21 @@ import {
   setFirebaseToken,
 } from './user/store';
 
+import { setTrip, endOngoingTrips } from './trip/store';
+
 export {
   //Authentication
   setRole,
   setAccessToken,
   setRefreshToken,
-  //Config
+  //User
   setUserInfo,
   setNumNotify,
   setIsLoading,
   setAppStatus,
   setIsFirstUse,
   setFirebaseToken,
+  //Trip
+  setTrip,
+  endOngoingTrips,
 };

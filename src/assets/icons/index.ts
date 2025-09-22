@@ -7,6 +7,9 @@ import FailToast from './FailToast';
 import WarningToast from './WarningToast';
 import HelpToast from './HelpToast';
 import ForgetPass from './ForgetPass';
+import IconHome from './IconHome';
+import IconActivities from './/IconActivities';
+import IconUser from './IconUser';
 
 export {
   IconGoogle,
@@ -18,4 +21,7 @@ export {
   FailToast,
   SuccessToast,
   ForgetPass,
+  IconHome,
+  IconActivities,
+  IconUser,
 };

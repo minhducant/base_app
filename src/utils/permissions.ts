@@ -1,6 +1,15 @@
+import { useCallback, useEffect, useState } from 'react';
 import { Platform, Linking } from 'react-native';
 import { Settings } from 'react-native-fbsdk-next';
 import { check, PERMISSIONS, RESULTS, request } from 'react-native-permissions';
+
+export type LocationPermissionStatus =
+  | 'unavailable'
+  | 'denied'
+  | 'limited'
+  | 'granted'
+  | 'blocked'
+  | 'loading';
 
 const checkRequest = async (permission: any) => {
   try {
@@ -84,4 +93,54 @@ export const checkAppTracking = async () => {
       Settings.setAdvertiserTrackingEnabled(true);
     }
   } catch (error) {}
+};
+
+const getLocationPermission = () => {
+  if (Platform.OS === 'ios') {
+    return PERMISSIONS.IOS.LOCATION_WHEN_IN_USE;
+  }
+  return PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
+};
+
+export const useLocationPermission = () => {
+  const [status, setStatus] = useState<LocationPermissionStatus>('loading');
+
+  const checkPermission = useCallback(async () => {
+    try {
+      const permission = getLocationPermission();
+      const result = await check(permission);
+
+      switch (result) {
+        case RESULTS.UNAVAILABLE:
+          setStatus('unavailable');
+          break;
+        case RESULTS.DENIED:
+          const reqResult = await request(permission);
+          setStatus(reqResult as LocationPermissionStatus);
+          break;
+        case RESULTS.LIMITED:
+          setStatus('limited');
+          break;
+        case RESULTS.GRANTED:
+          setStatus('granted');
+          break;
+        case RESULTS.BLOCKED:
+          setStatus('blocked');
+          break;
+      }
+    } catch (err) {
+      console.warn('Location permission error:', err);
+      setStatus('unavailable');
+    }
+  }, []);
+
+  const openSettings = useCallback(() => {
+    Linking.openSettings();
+  }, []);
+
+  useEffect(() => {
+    checkPermission();
+  }, [checkPermission]);
+
+  return { status, checkPermission, openSettings };
 };

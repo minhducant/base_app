@@ -15,7 +15,6 @@ import color from '@styles/color';
 import { USER_LANG } from '@utils/deviceLang';
 import themeStyle from '@styles/theme.style';
 import { DataLanguage } from '@utils/deviceLang';
-
 export interface InputRef {
   getValue: () => any;
   setValue: (value: string) => any;
@@ -40,7 +39,7 @@ export const InputLanguage = forwardRef<InputRef, InputProps>(
     const currentLanguage = i18n.language;
     const [isFocus, setIsFocus] = useState(false);
     const [value, setValue] = useState<any>(
-      DataLanguage.find(language => language.value === currentLanguage) || "vi",
+      DataLanguage.find(language => language.value === currentLanguage) || 'vi',
     );
 
     useImperativeHandle(ref, () => ({

@@ -1,14 +1,16 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   View,
   Text,
   Platform,
+  Keyboard,
   ScrollView,
   TouchableOpacity,
   KeyboardAvoidingView,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuthApi } from '@api/auth';
@@ -16,6 +18,7 @@ import { showMessage } from '@utils/index';
 import { setIsLoading } from '@stores/action';
 import { InputText } from '@components/base/index';
 import AuthButton from '@components/authentication/button';
+import TemplateLogin from '@components/authentication/templateLogin';
 import { getRegisterLabel } from '@components/authentication/authLabel';
 import { authenticationStyle as styles } from '@styles/authentication.style';
 
@@ -29,6 +32,20 @@ export default function RegisterScreen({ navigation }: any) {
   const dispatch = useDispatch();
   const registerLabel = getRegisterLabel(t);
   const formRef = useRef<any>({ ...registerLabel });
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const onRegis = async () => {
     const params = {
@@ -79,54 +96,67 @@ export default function RegisterScreen({ navigation }: any) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.titleRegister}>{t('register_account')}</Text>
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.ScrollView}
-        >
-          <InputText
-            {...registerLabel.name_mobile}
-            autoCapitalize="words"
-            ref={(ref: any) => (formRef.current.name_mobile = ref)}
+    <TemplateLogin>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <SafeAreaView style={styles.container}>
+          <FastImage
+            style={{ width: 150, height: 150, alignSelf: 'center' }}
+            source={require('@assets/images/app_logo.jpeg')}
+            resizeMode={FastImage.resizeMode.contain}
           />
-          <InputText
-            {...registerLabel.email}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            ref={(ref: any) => (formRef.current.email = ref)}
-          />
-          <InputText
-            {...registerLabel.phone}
-            keyboardType="number-pad"
-            ref={(ref: any) => (formRef.current.phone = ref)}
-          />
-          <InputText
-            {...registerLabel.password}
-            secureTextEntry
-            autoCapitalize="none"
-            ref={(ref: any) => (formRef.current.password = ref)}
-          />
-          <InputText
-            {...registerLabel.re_password}
-            secureTextEntry
-            autoCapitalize="none"
-            ref={(ref: any) => (formRef.current.re_password = ref)}
-          />
-        </ScrollView>
-        <AuthButton title={t('register')} onPress={onRegis} />
-        <View style={styles.registerArea}>
-          <Text style={styles.txtNewTo}>{t('do_have_an_account')}</Text>
-          <TouchableOpacity onPress={() => navigation.replace('LoginScreen')}>
-            <Text style={styles.txtRegister}>{t('sign_in')}</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+          <Text style={styles.titleRegister}>{t('register_account')}</Text>
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.ScrollView}
+          >
+            <InputText
+              {...registerLabel.name_mobile}
+              autoCapitalize="words"
+              ref={(ref: any) => (formRef.current.name_mobile = ref)}
+            />
+            <InputText
+              {...registerLabel.email}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              ref={(ref: any) => (formRef.current.email = ref)}
+            />
+            <InputText
+              {...registerLabel.phone}
+              keyboardType="number-pad"
+              ref={(ref: any) => (formRef.current.phone = ref)}
+            />
+            <InputText
+              {...registerLabel.password}
+              secureTextEntry
+              autoCapitalize="none"
+              ref={(ref: any) => (formRef.current.password = ref)}
+            />
+            <InputText
+              {...registerLabel.re_password}
+              secureTextEntry
+              autoCapitalize="none"
+              ref={(ref: any) => (formRef.current.re_password = ref)}
+            />
+          </ScrollView>
+          {!isKeyboardVisible && (
+            <>
+              <AuthButton title={t('register')} onPress={onRegis} />=
+              <View style={styles.registerArea}>
+                <Text style={styles.txtNewTo}>{t('do_have_an_account')}</Text>
+                <TouchableOpacity
+                  onPress={() => navigation.replace('LoginScreen')}
+                >
+                  <Text style={styles.txtRegister}>{t('sign_in')}</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+    </TemplateLogin>
   );
 }

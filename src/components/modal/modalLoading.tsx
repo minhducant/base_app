@@ -3,9 +3,10 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { StyleSheet, ActivityIndicator, Modal, View } from 'react-native';
 
+import COLORS from '@styles/color';
 import { setIsLoading } from '@stores/action';
 
-const ModalLoadingLottie = () => {
+const ModalLoading = () => {
   const dispatch = useDispatch();
   const isLoading = useSelector((state: any) => state.user.isLoading);
 
@@ -20,14 +21,16 @@ const ModalLoadingLottie = () => {
       animationType="fade"
       onDismiss={handleCloseModal}
     >
-      <View style={stylesLoading.modalView}>
-        <ActivityIndicator />
+     <View style={stylesLoading.centeredView}>
+        <View style={stylesLoading.modalView}>
+          <ActivityIndicator size="large" color={COLORS.MAIN} />
+        </View>
       </View>
     </Modal>
   );
 };
 
-export default ModalLoadingLottie;
+export default ModalLoading;
 
 const stylesLoading = StyleSheet.create({
   modal: {
@@ -51,5 +54,11 @@ const stylesLoading = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)', // làm nền mờ
   },
 });

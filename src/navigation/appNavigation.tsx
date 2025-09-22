@@ -4,9 +4,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { setAppStatus } from '@stores/action';
+// import { setAppStatus } from '@stores/action';
 import { checkAppTracking } from '@utils/permissions';
 import { navigationRef } from '@navigation/rootNavigation';
+import { BottomTabsNavigator } from '@navigation/bottomTab';
 
 import LoginScreen from '@screens/auth/Login';
 import RegisterScreen from '@screens/auth/Register';
@@ -14,8 +15,6 @@ import ResetPassScreen from '@screens/auth/ResetPass';
 import VerifyMailScreen from '@screens/auth/VerifyMail';
 import VerifyCodeScreen from '@screens/auth/VerifyCode';
 import ForgetPassScreen from '@screens/auth/ForgetPass';
-
-import HomeScreen from '@screens/home/index';
 
 const AuthStackNav = createStackNavigator();
 const NativeStack = createNativeStackNavigator();
@@ -41,12 +40,6 @@ export const AppNavigation = () => {
   const { appStatus, isFirstUse } = useSelector((state: any) => state.user);
 
   useEffect(() => {
-    isFirstUse
-      ? dispatch(setAppStatus(APP_STATUS.AUTH))
-      : dispatch(setAppStatus(APP_STATUS.AUTH));
-  }, [isFirstUse, dispatch]);
-
-  useEffect(() => {
     checkAppTracking();
   }, []);
 
@@ -63,7 +56,10 @@ export const AppNavigation = () => {
           <NativeStack.Screen name="AuthStack" component={AuthStack} />
         )}
         {appStatus === APP_STATUS.APP && (
-          <NativeStack.Screen name="HomeScreen" component={HomeScreen} />
+          <NativeStack.Screen
+            name="HomeScreen"
+            component={BottomTabsNavigator}
+          />
         )}
       </NativeStack.Navigator>
     </NavigationContainer>

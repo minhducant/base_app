@@ -56,8 +56,7 @@ const VerifyMailScreen = ({ navigation }: any) => {
         />
         <View style={styles.formAuth}>
           <Text style={styles.descriptionSecurity}>
-            Vui lòng nhập địa chỉ email đã đăng ký để chúng tôi gửi liên kết đặt
-            lại mật khẩu.
+            {t('enter_registered_email_reset')}
           </Text>
           <View style={{ width: '100%', marginTop: 20 }}>
             <Input
@@ -66,7 +65,7 @@ const VerifyMailScreen = ({ navigation }: any) => {
               returnKeyType="done"
               iconName="email-outline"
               onSubmitEditing={onVerify}
-              placeholder={t('your_email')}
+              placeholder={t('email')}
             />
           </View>
         </View>
