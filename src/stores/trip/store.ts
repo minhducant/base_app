@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface Location {
   name: string;
@@ -37,10 +37,13 @@ const store = createSlice({
           : t,
       );
     },
+    addTrip(state, action: PayloadAction<TripItem>) {
+      state.trip.push(action.payload);
+    },
   },
 });
 
-export const { setTrip, endOngoingTrips } = store.actions;
+export const { setTrip, endOngoingTrips, addTrip } = store.actions;
 
 export const stores = {
   reducer: store.reducer,

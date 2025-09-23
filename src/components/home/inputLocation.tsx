@@ -8,7 +8,6 @@ import { IconLibrary } from '@components/base/iconLibrary';
 
 interface InputProps {
   iconName: string;
-  password?: boolean;
   onFocus?: () => void;
   onPressIn?: () => void;
   returnKeyType?: any;
@@ -17,13 +16,14 @@ interface InputProps {
   ref: Ref<any>;
   autoFocus?: boolean;
   onChangeText?: (text: string) => void;
+  actionLeft?: () => void;
+  setDataAddress?: (data: any) => void;
 }
 
 const InputLocation: React.FC<InputProps> = React.forwardRef(
   (
     {
       iconName,
-      password,
       onFocus = () => {},
       onPressIn = () => {},
       returnKeyType,
@@ -31,6 +31,8 @@ const InputLocation: React.FC<InputProps> = React.forwardRef(
       onSubmitEditing,
       autoFocus,
       onChangeText = () => {},
+      actionLeft = () => {},
+      setDataAddress = () => {},
     },
     ref,
   ) => {
@@ -45,25 +47,23 @@ const InputLocation: React.FC<InputProps> = React.forwardRef(
       clear: () => {
         textInputRef.current.clear();
       },
+      setValue: (text: string) => {
+        setValue(text);
+      },
       value,
-      clearValue,
     }));
 
-    const clearValue = () => {
-      setValue('');
-    };
-
     return (
-      <View>
-        <View
-          style={[
-            style.inputContainer,
-            {
-              alignItems: 'center',
-              borderColor: isFocused ? COLORS.MAIN : COLORS.SILVER,
-            },
-          ]}
-        >
+      <View
+        style={[
+          style.inputContainer,
+          {
+            alignItems: 'center',
+            borderColor: isFocused ? COLORS.MAIN : COLORS.SILVER,
+          },
+        ]}
+      >
+        <TouchableOpacity onPress={() => actionLeft()}>
           <IconLibrary
             library="MaterialIcons"
             name={iconName}
@@ -73,50 +73,52 @@ const InputLocation: React.FC<InputProps> = React.forwardRef(
               marginRight: 10,
             }}
           />
-          <TextInput
-            ref={textInputRef}
-            value={value}
-            autoCorrect={false}
-            onChangeText={setValue}
-            onPressIn={() => onPressIn()}
-            onFocus={() => {
-              setIsFocused(true);
-              onFocus();
-            }}
-            onChange={() => onChangeText(value)}
-            onBlur={() => setIsFocused(false)}
-            autoFocus={autoFocus}
-            onSubmitEditing={onSubmitEditing}
-            placeholder={placeholder}
-            returnKeyType={returnKeyType}
-            placeholderTextColor={COLORS.DUSTY_GRAY}
-            autoCapitalize="none"
+        </TouchableOpacity>
+        <TextInput
+          ref={textInputRef}
+          value={value}
+          autoCorrect={false}
+          onChangeText={setValue}
+          onPressIn={() => onPressIn()}
+          onFocus={() => {
+            setIsFocused(true);
+            onFocus();
+          }}
+          onChange={() => onChangeText(value)}
+          onBlur={() => setIsFocused(false)}
+          autoFocus={autoFocus}
+          onSubmitEditing={onSubmitEditing}
+          placeholder={placeholder}
+          returnKeyType={returnKeyType}
+          placeholderTextColor={COLORS.DUSTY_GRAY}
+          autoCapitalize="none"
+          style={{
+            flex: 1,
+            fontSize: 16,
+            fontFamily: theme.FONT_FAMILY,
+          }}
+        />
+        <TouchableOpacity
+          onPress={() => {
+            setValue(''), setDataAddress([]);
+          }}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <IconLibrary
+            library="AntDesign"
+            name="close"
             style={{
-              flex: 1,
-              fontSize: 16,
-              fontFamily: theme.FONT_FAMILY,
+              marginLeft: normalize(10),
+              backgroundColor: 'transparent',
             }}
+            size={22}
+            color={COLORS.SILVERC4}
           />
-          <TouchableOpacity
-            onPress={() => setValue('')}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            style={{
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <IconLibrary
-              library="AntDesign"
-              name="close"
-              style={{
-                marginLeft: normalize(10),
-                backgroundColor: 'transparent',
-              }}
-              size={22}
-              color={COLORS.SILVERC4}
-            />
-          </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   },

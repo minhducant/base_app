@@ -5,7 +5,7 @@ import { AuthApi } from '@api/auth';
 const initialState = {
   userInfo: {},
   numNotify: 0,
-  appStatus: 3,
+  appStatus: 2,
   isLoading: false,
   firebaseToken: '',
   isFirstUse: true,

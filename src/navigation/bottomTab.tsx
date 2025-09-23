@@ -11,6 +11,7 @@ import HistorySreen from '@screens/home/History';
 import { navigationStyle } from '@styles/navigation.style';
 import { IconHome, IconActivities, IconUser } from '@assets/icons';
 
+import MapCheckScreen from '@screens/home/MapCheck';
 import SelectLocationScreen from '@screens/home/SelectLocation';
 
 const Stack = createStackNavigator();
@@ -19,7 +20,7 @@ const Tab = createBottomTabNavigator();
 const screenOptions = { headerShown: false };
 
 function NoFooter() {
-  const screens: any = [SelectLocationScreen];
+  const screens: any = [MapCheckScreen, SelectLocationScreen];
 
   return (
     <Stack.Navigator screenOptions={screenOptions}>

@@ -15,6 +15,7 @@ import MapView, {
   Polyline,
   AnimatedRegion,
   PROVIDER_GOOGLE,
+  PROVIDER_DEFAULT,
 } from 'react-native-maps';
 
 import { homeStyle } from '@styles/home.style';
@@ -36,7 +37,7 @@ export default function HomeScreen({ navigation }: any) {
   const ongoingTrips = useSelector((state: any) =>
     state?.trip?.trip?.filter((t: any) => t.status === 'ongoing'),
   );
-  const { status, checkPermission, openSettings } = useLocationPermission();
+  const { status } = useLocationPermission();
   const [region, setRegion] = useState<any>({});
 
   // const ongoingTrips = [
@@ -107,6 +108,7 @@ export default function HomeScreen({ navigation }: any) {
             mapType="hybrid"
             region={region}
             style={homeStyle.mapHome}
+            // provider={PROVIDER_GOOGLE}
             showsUserLocation={status === 'granted'}
           >
             {/* <Marker
@@ -115,10 +117,30 @@ export default function HomeScreen({ navigation }: any) {
                 latitude: 37.78825,
                 longitude: -122.4324,
               }}
-              // onDragEnd={
-              //   (e) => alert(JSON.stringify(e.nativeEvent.coordinate))
-              // }
               title={'Test Marker'}
+            /> */}
+            {/* <Polyline
+              coordinates={[
+                { latitude: 40.44375, longitude: -79.95392 },
+                { latitude: 40.44355, longitude: -79.95368 },
+                { latitude: 40.44327, longitude: -79.95355 },
+                { latitude: 40.44329, longitude: -79.95345 },
+                { latitude: 40.44317, longitude: -79.9534 },
+                { latitude: 40.44313, longitude: -79.95336 },
+                { latitude: 40.44305, longitude: -79.95316 },
+                { latitude: 40.44301, longitude: -79.95313 },
+                { latitude: 40.44298, longitude: -79.95307 },
+                { latitude: 40.44259, longitude: -79.95261 },
+                { latitude: 40.44255, longitude: -79.95265 },
+                { latitude: 40.44244, longitude: -79.95262 },
+                { latitude: 40.4424, longitude: -79.95254 },
+                { latitude: 40.44238, longitude: -79.95248 },
+                { latitude: 40.44239, longitude: -79.9524 },
+                { latitude: 40.4424, longitude: -79.95239 },
+                { latitude: 40.44231, longitude: -79.95227 },
+                { latitude: 40.4421, longitude: -79.95249 },
+                { latitude: 40.442, longitude: -79.95258 },
+              ]}
             /> */}
           </MapView>
         )}

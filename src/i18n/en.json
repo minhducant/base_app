@@ -84,6 +84,8 @@
   "ok": "Ok",
   "map": "Map",
   "co2_estimate": "CO₂ Estimate",
-  "choose_from_map": "Choose from Map"
-
+  "choose_from_map": "Choose from Map",
+  "current_location": "Current Location",
+  "please_select_from_to": "Vui lòng chọn điểm đi và điểm đến",
+    "choose_route": "Choose Route"
 }

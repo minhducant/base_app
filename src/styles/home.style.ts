@@ -1,7 +1,7 @@
 import normalize from 'react-native-normalize';
-import { ViewStyle , Dimensions} from 'react-native';
+import { ViewStyle, Dimensions } from 'react-native';
 
-const height  = Dimensions.get('window').height;
+const height = Dimensions.get('window').height;
 
 import color from '@styles/color';
 import themeStyle from '@styles/theme.style';
@@ -26,9 +26,15 @@ export const homeStyle: any = {
   },
   mapHome: {
     width: '100%',
-    height: height * 80 / 100,
+    height: (height * 80) / 100,
     borderRadius: normalize(16),
     marginTop: normalize(16),
+  },
+  mapCheck: {
+    width: '100%',
+    height: (height * 50) / 100,
+    borderRadius: normalize(16),
+    // marginTop: normalize(16),
   },
   txtChoseFromMap: {
     fontSize: normalize(14),
@@ -42,4 +48,27 @@ export const homeStyle: any = {
     justifyContent: 'center',
     paddingVertical: normalize(12),
   } as ViewStyle,
+  addressItem: {
+    padding: normalize(8),
+    borderBottomWidth: 1,
+    borderBottomColor: color.SILVER,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: normalize(8),
+  } as ViewStyle,
+  titleAddressItem: {
+    fontSize: 14,
+    fontFamily: themeStyle.FONT_FAMILY,
+    color: color.BLACK,
+    marginLeft: normalize(8),
+    // paddingRight: normalize(16),
+  },
+  txtAddressItem: {
+    fontSize: 14,
+    fontFamily: themeStyle.FONT_FAMILY,
+    color: color.DUSTY_GRAY,
+    marginLeft: normalize(8),
+    marginTop: normalize(4),
+    width: '60%',
+  },
 };

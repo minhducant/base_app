@@ -84,6 +84,8 @@
   "ok": "Ok",
   "map": "Bản đồ",
   "co2_estimate": "Ước tính CO₂",
-  "choose_from_map": "Chọn từ bản đồ"
-
+  "choose_from_map": "Chọn từ bản đồ",
+  "current_location": "Vị trí hiện tại",
+   "please_select_from_to": "Vui lòng chọn điểm đi và điểm đến",
+     "choose_route": "Chọn lộ trình"
 }

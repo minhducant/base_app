@@ -9,7 +9,7 @@ import {
   setFirebaseToken,
 } from './user/store';
 
-import { setTrip, endOngoingTrips } from './trip/store';
+import { setTrip, addTrip, endOngoingTrips } from './trip/store';
 
 export {
   //Authentication
@@ -25,5 +25,6 @@ export {
   setFirebaseToken,
   //Trip
   setTrip,
+  addTrip,
   endOngoingTrips,
 };

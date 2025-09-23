@@ -5,9 +5,10 @@ import { Text, StyleSheet, TouchableOpacity } from 'react-native';
 import color from '@styles/color';
 import themeStyle from '@styles/theme.style';
 
-export const ActionButton = ({ title, onPress }: any) => {
+export const ActionButton = ({ title, onPress, disable = false }: any) => {
   return (
     <TouchableOpacity
+      disabled={disable}
       onPress={onPress}
       style={styles.button}
       activeOpacity={0.8}

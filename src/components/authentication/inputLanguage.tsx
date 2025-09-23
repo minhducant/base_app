@@ -5,7 +5,7 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import normalize from 'react-native-normalize';
 import { Dropdown } from 'react-native-element-dropdown';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -66,6 +66,16 @@ export const InputLanguage = forwardRef<InputRef, InputProps>(
       }
     };
 
+    const renderItem = (item: any) => {
+      const Icon = item.icon;
+      return (
+        <View style={styles.itemContainer}>
+          <Icon width={22} height={22} />
+          <Text style={styles.itemText}>{item.label}</Text>
+        </View>
+      );
+    };
+
     return (
       <View style={styles.inputContainer}>
         <Dropdown
@@ -87,6 +97,7 @@ export const InputLanguage = forwardRef<InputRef, InputProps>(
             DataLanguage?.find(language => language.value === currentLanguage)
               ?.label
           }
+          renderItem={renderItem}
           placeholderStyle={[styles.textStyle, { color: 'gray' }]}
           style={[styles.dropdown, isFocus && { borderColor: 'red' }]}
         />
@@ -131,5 +142,16 @@ const styles = StyleSheet.create({
     height: 40,
     fontSize: 15,
     fontFamily: themeStyle.FONT_FAMILY,
+  },
+  itemText: {
+    fontSize: 15,
+    textAlign: 'right',
+    marginLeft: normalize(10),
+    fontFamily: themeStyle.FONT_FAMILY,
+  },
+  itemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: normalize(16),
   },
 });
