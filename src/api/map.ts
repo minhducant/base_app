@@ -2,7 +2,7 @@ import { ApiUrl } from '@configs/apiUrl';
 import { client } from '@configs/axiosConfig';
 import { extraParams } from '@utils/apiResponse';
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyBbnSnUhWUZ1aYfq6p2lwCPFV_nXGnhzHQ';
+const GOOGLE_MAPS_API_KEY = 'AIzaSyCkpnh8WJraMP-8TZoOZn1wZjX4gvrwre8';
 
 export class mapApi {
   static async getDirection(lat: number, lon: number) {
@@ -71,8 +71,33 @@ export class mapApi {
     const element = response?.rows?.[0]?.elements?.[0];
     if (!element || element.status !== 'OK') return null;
     return {
-      distance: element.distance, // { text: '3.2 km', value: 3210 }
-      duration: element.duration, // { text: '10 phút', value: 600 }
+      distance: element.distance,
+      duration: element.duration,
+    };
+  }
+  static async getRoutePolyline(
+    origin: { lat: number; lng: number },
+    destination: { lat: number; lng: number },
+    mode: 'driving' | 'walking' | 'bicycling' | 'transit' = 'driving',
+  ) {
+    const response: any = await client.get(
+      `https://maps.googleapis.com/maps/api/directions/json`,
+      {
+        params: {
+          origin: `${origin.lat},${origin.lng}`,
+          destination: `${destination.lat},${destination.lng}`,
+          mode,
+          key: GOOGLE_MAPS_API_KEY,
+          language: 'vi',
+        },
+      },
+    );
+    const route = response?.routes?.[0];
+    if (!route) return null;
+    return {
+      overviewPolyline: route.overview_polyline?.points, // để decode vẽ đường
+      legs: route.legs, // thông tin từng chặng: khoảng cách, thời gian
+      bounds: route.bounds, // vùng bao quanh route
     };
   }
 }

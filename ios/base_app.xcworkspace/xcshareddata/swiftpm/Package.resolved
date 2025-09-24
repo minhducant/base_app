@@ -1,5 +1,5 @@
 {
-  "originHash" : "b077e8058f0b0cbdca68785a601f6126238a4f0e56ea38ea7026cab7f90a02a4",
+  "originHash" : "ca3cf5f8f83d297b47d2cb0edff3e06f294951e2e06fa55cfc82831103499b2a",
   "pins" : [
     {
       "identity" : "facebook-ios-sdk",
@@ -8,15 +8,6 @@
       "state" : {
         "revision" : "c19607d535864533523d1f437c84035e5fb101cf",
         "version" : "14.1.0"
-      }
-    },
-    {
-      "identity" : "ios-maps-sdk",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/googlemaps/ios-maps-sdk",
-      "state" : {
-        "revision" : "eae9fb0930f6f8ebcc5bfa6f7683da3cc3782cc3",
-        "version" : "10.3.0"
       }
     }
   ],

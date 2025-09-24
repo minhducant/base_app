@@ -25,7 +25,6 @@
 		A562E27052F74F4B979978BB /* PlusJakartaSans-ExtraLightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 38D894546A3745429F290638 /* PlusJakartaSans-ExtraLightItalic.ttf */; };
 		A60BE54BFFB34C7699C8A665 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5E08C65922B04B52B8E6591F /* PlusJakartaSans-Regular.ttf */; };
 		AC4739B64D4C4EC18F28AA38 /* PlusJakartaSans-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DC0DDE530AF549799E35A997 /* PlusJakartaSans-LightItalic.ttf */; };
-		CEACC0F12E83034C0092554B /* GoogleMaps in Frameworks */ = {isa = PBXBuildFile; productRef = CEACC0F02E83034C0092554B /* GoogleMaps */; };
 		CECE04662E777773004A6A43 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = CECE04652E777773004A6A43 /* File.swift */; };
 		F783D628889D4589AADD7086 /* PlusJakartaSans-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7C907B89AD824482926485EC /* PlusJakartaSans-ExtraLight.ttf */; };
 /* End PBXBuildFile section */
@@ -64,7 +63,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CEACC0F12E83034C0092554B /* GoogleMaps in Frameworks */,
 				0C80B921A6F3F58F76C31292 /* libPods-base_app.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -204,7 +202,6 @@
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			packageReferences = (
 				CECE04612E7773E4004A6A43 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
-				CEACC0EF2E83034C0092554B /* XCRemoteSwiftPackageReference "ios-maps-sdk" */,
 			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
@@ -267,9 +264,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-base_app/Pods-base_app-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-base_app/Pods-base_app-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -306,9 +307,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-base_app/Pods-base_app-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-base_app/Pods-base_app-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -566,14 +571,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		CEACC0EF2E83034C0092554B /* XCRemoteSwiftPackageReference "ios-maps-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/googlemaps/ios-maps-sdk";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 10.3.0;
-			};
-		};
 		CECE04612E7773E4004A6A43 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/facebook/facebook-ios-sdk";
@@ -583,14 +580,6 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		CEACC0F02E83034C0092554B /* GoogleMaps */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = CEACC0EF2E83034C0092554B /* XCRemoteSwiftPackageReference "ios-maps-sdk" */;
-			productName = GoogleMaps;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
 }

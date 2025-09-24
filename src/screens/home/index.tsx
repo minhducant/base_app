@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import MapView, {
+  LatLng,
   Marker,
   Polyline,
   AnimatedRegion,
@@ -111,14 +112,14 @@ export default function HomeScreen({ navigation }: any) {
             // provider={PROVIDER_GOOGLE}
             showsUserLocation={status === 'granted'}
           >
-            {/* <Marker
+            <Marker
               draggable
               coordinate={{
                 latitude: 37.78825,
                 longitude: -122.4324,
               }}
               title={'Test Marker'}
-            /> */}
+            />
             {/* <Polyline
               coordinates={[
                 { latitude: 40.44375, longitude: -79.95392 },
