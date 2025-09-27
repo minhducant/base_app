@@ -15,5 +15,4 @@ export const onLogout = async () => {
   store.dispatch(setAccessToken(''));
   store.dispatch(setRefreshToken(''));
   store.dispatch(setAppStatus(2));
-  navigationRef.current.navigate('HomeScreen');
 };

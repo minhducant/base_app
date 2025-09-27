@@ -2,8 +2,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface Location {
   name: string;
-  lat: number;
-  lng: number;
+  latitude: number;
+  longitude: number;
 }
 
 interface TripItem {

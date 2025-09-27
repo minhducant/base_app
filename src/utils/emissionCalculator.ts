@@ -1,41 +1,36 @@
-export type EmissionFactors = {
-  [pollutant: string]: number;
-};
-
-type VehicleType = "motorbike" | "car" | "bus";
+export type VehicleType = 'bike' | 'car' | 'bus' | 'truck' | 'taxi';
 
 const vehicleData: Record<
   VehicleType,
-  { fuelConsumption: number; factors: EmissionFactors }
+  { fuelConsumption: number; CO: number }
 > = {
-  motorbike: {
-    fuelConsumption: 2.26,
-    factors: { CO: 12.09, HC: 1.02, NOx: 0.11 },
+  bike: {
+    fuelConsumption: 2.26, // l/100km
+    CO: 12.09, // g CO / lít
   },
   car: {
     fuelConsumption: 11.3,
-    factors: { CO: 2.21, HC: 0.26, NOx: 1.05, PM: 0.3 },
+    CO: 2.21,
   },
   bus: {
-    fuelConsumption: 0,
-    factors: { CO: 2.9, HC: 0.8, NOx: 32.7 },
+    fuelConsumption: 30.0,
+    CO: 2.9,
+  },
+  truck: {
+    fuelConsumption: 25.0,
+    CO: 3.5,
+  },
+  taxi: {
+    fuelConsumption: 12.5,
+    CO: 3.0,
   },
 };
 
-export function calculateEmission(
-  fuelConsumption: number,
-  emissionFactors: EmissionFactors
-): { [pollutant: string]: number } {
-  const result: { [pollutant: string]: number } = {};
-
-  Object.keys(emissionFactors).forEach((pollutant) => {
-    result[pollutant] = fuelConsumption * emissionFactors[pollutant];
-  });
-
-  return result;
-}
-
-export function calculateVehicleEmission(vehicle: VehicleType) {
+export function calculateVehicleCO(
+  vehicle: VehicleType,
+  distanceKm: number,
+): number {
   const data = vehicleData[vehicle];
-  return calculateEmission(data.fuelConsumption, data.factors);
+  const fuelUsed = (data.fuelConsumption / 100) * distanceKm; // lít tiêu thụ
+  return fuelUsed * data.CO; // g CO
 }

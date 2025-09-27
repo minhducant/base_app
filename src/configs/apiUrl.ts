@@ -1,6 +1,6 @@
 export const API_PREFIX = '/api/v1';
-export const MAIN_DOMAIN = 'http://172.104.189.80:3003';
-// export const MAIN_DOMAIN = 'http://192.168.1.217:3003';
+// export const MAIN_DOMAIN = 'http://172.104.189.80:3003';
+export const MAIN_DOMAIN = 'http://192.168.1.121:3003';
 
 export const ApiUrl = {
   auth: {
@@ -17,5 +17,13 @@ export const ApiUrl = {
     verify_otp_forget: '/client/verify-otp-forget',
     refresh_access_token: '/auth/client/refresh_access_token',
     change_password_by_code: '/client/change-password-by-code',
+  },
+  trip: {
+    get_trips: '/trips',
+    get_trip_detail: '/trips', // + /:id
+    create_trip: '/trips',
+    update_trip: '/trips', // + /:id
+    delete_trip: '/trips', // + /:id
+    ongoing_trips: '/trips/ongoing',
   },
 };

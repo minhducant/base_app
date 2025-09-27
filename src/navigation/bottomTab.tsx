@@ -5,14 +5,14 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import color from '@styles/color';
 import UserScreen from '@screens/user/User';
-import HomeScreen from '@screens/home/index';
+import HomeScreen from '@screens/home/Home';
 import { useAsyncApp } from '@utils/asyncApp';
-import HistorySreen from '@screens/home/History';
 import { navigationStyle } from '@styles/navigation.style';
-import { IconHome, IconActivities, IconUser } from '@assets/icons';
+import { IconHome, IconMap, IconUser } from '@assets/icons';
 
-import MapCheckScreen from '@screens/home/MapCheck';
+import ChangeLanguageScreen from '@screens/user/ChangeLanguage';
 import SelectLocationScreen from '@screens/home/SelectLocation';
+import SelectOriginDestination from '@screens/home/SelectOrigin';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -20,7 +20,11 @@ const Tab = createBottomTabNavigator();
 const screenOptions = { headerShown: false };
 
 function NoFooter() {
-  const screens: any = [MapCheckScreen, SelectLocationScreen];
+  const screens: any = [
+    SelectLocationScreen,
+    ChangeLanguageScreen,
+    SelectOriginDestination,
+  ];
 
   return (
     <Stack.Navigator screenOptions={screenOptions}>
@@ -47,9 +51,9 @@ function BottomTabs() {
     },
     {
       name: 'HistorySreen',
-      component: HistorySreen,
-      label: t('activity'),
-      icon: IconActivities,
+      component: SelectOriginDestination,
+      label: t('map'),
+      icon: IconMap,
     },
     {
       name: 'UserScreen',

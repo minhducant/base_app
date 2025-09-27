@@ -55,7 +55,7 @@ const SelectLocationScreen = ({ navigation }: any) => {
             const res: any = await mapApi.getDirection(latitude, longitude);
             if (res?.place_id) {
               const address = res?.formatted_address;
-              fromLocation?.current?.setValue(t("current_location"));
+              fromLocation?.current?.setValue(t('current_location'));
               setFrom((prev: any) => ({
                 ...prev,
                 latitude,
@@ -74,8 +74,11 @@ const SelectLocationScreen = ({ navigation }: any) => {
                 heading: 0,
               }));
               toLocation?.current?.focus();
+            } else {
+              showMessage.fail(t('error_get_current_location'));
             }
           } catch (apiErr) {
+            showMessage.fail(t('error_get_current_location'));
           } finally {
             dispatch(setIsLoading(false));
           }

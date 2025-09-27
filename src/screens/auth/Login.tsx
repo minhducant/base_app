@@ -8,15 +8,11 @@ import { Text, View, Keyboard, TouchableOpacity } from 'react-native';
 import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
 
 import { AuthApi } from '@api/auth';
-// import { IconLibrary } from '@components/base';
+import { IconFacebook } from '@assets/icons/index';
 import Input from '@components/authentication/input';
 import { showMessage, setStorage } from '@utils/index';
 import AuthButton from '@components/authentication/button';
 import { setAppStatus, setIsLoading } from '@stores/action';
-import {
-  // IconGoogle,
-  IconFacebook,
-} from '@assets/icons/index';
 import TemplateLogin from '@components/authentication/templateLogin';
 import { InputLanguage } from '@components/authentication/inputLanguage';
 import { authenticationStyle as styles } from '@styles/authentication.style';
@@ -88,12 +84,6 @@ export default function Login({ navigation }: any) {
     }
   };
 
-  // const onLoginGoogle = async () => {};
-
-  // const onLoginGust = async () => {
-  //   dispatch(setAppStatus(3));
-  // };
-
   return (
     <TemplateLogin>
       <SafeAreaView style={styles.containerSpanish}>
@@ -137,34 +127,6 @@ export default function Login({ navigation }: any) {
             <Text style={styles.txtForgetPass}>{t('forgot_password')}?</Text>
           </TouchableOpacity>
           <Text style={styles.txtLoginWith}>{t('or')}</Text>
-          {/* <View style={styles.loginWith}>
-            <TouchableOpacity
-              onPress={onLoginGoogle}
-              activeOpacity={0.5}
-              style={styles.buttonLoginWith}
-            >
-              <IconGoogle />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={onLoginFacebook}
-              activeOpacity={0.5}
-              style={[styles.buttonLoginWith]}
-            >
-              <IconFacebook />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={onLoginGust}
-              activeOpacity={0.5}
-              style={[styles.buttonLoginWith]}
-            >
-              <IconLibrary
-                library="AntDesign"
-                name={'arrowright'}
-                size={30}
-                color={'black'}
-              />
-            </TouchableOpacity>
-          </View> */}
           <TouchableOpacity
             activeOpacity={0.7}
             style={[styles.loginFacebook]}

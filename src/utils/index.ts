@@ -8,7 +8,7 @@ import {
 import { onLogout } from './logout';
 import { useAsyncApp } from './asyncApp';
 import { showMessage } from './toast';
-import { calculateVehicleEmission } from './emissionCalculator';
+import { calculateVehicleCO } from './emissionCalculator';
 
 export {
   getAccessToken,
@@ -19,5 +19,5 @@ export {
   getStorage,
   multiRemove,
   onLogout,
-  calculateVehicleEmission,
+  calculateVehicleCO,
 };

@@ -8,7 +8,7 @@ export class AuthApi {
     const response = await client.get(
       ApiUrl.auth.get_user_info + extraParams(params),
     );
-    return response;
+    return response.data;
   }
   static async Login(params: AppApiTypeRequest.Login) {
     const response = await client.post(ApiUrl.auth.login, params);

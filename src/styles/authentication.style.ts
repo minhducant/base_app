@@ -232,7 +232,9 @@ export const authenticationStyle: any = {
     fontFamily: themeStyle.FONT_BOLD,
     fontWeight: 'bold',
     fontSize: 16,
-    marginHorizontal: normalize(20),
+    marginHorizontal: normalize(8),
+    textAlign: 'center',
+    alignSelf: 'center',
   },
   forgetWay: {
     width: '90%',

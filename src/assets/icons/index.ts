@@ -10,6 +10,13 @@ import ForgetPass from './ForgetPass';
 import IconHome from './IconHome';
 import IconActivities from './/IconActivities';
 import IconUser from './IconUser';
+import IconMap from './IconMap';
+import IconChat from './IconChat';
+import IconBook from './IconBook';
+import IconGame from './IconGame';
+import IconWallet from './IconWallet';
+import QuestionVector from './QuestionVector';
+import SurveyVector from './SurveyVector';
 
 export {
   IconGoogle,
@@ -24,4 +31,11 @@ export {
   IconHome,
   IconActivities,
   IconUser,
+  IconMap,
+  IconChat,
+  IconBook,
+  IconGame,
+  IconWallet,
+  QuestionVector,
+  SurveyVector
 };
