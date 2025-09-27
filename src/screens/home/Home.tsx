@@ -22,6 +22,7 @@ import {
   SurveyVector,
   QuestionVector,
 } from '@assets/icons';
+import { useWeather } from '@hooks/useWeather';
 import { homeStyle } from '@styles/home.style';
 import { useLocationPermission } from '@utils/permissions';
 
@@ -29,22 +30,22 @@ export default function HomeScreen({ navigation }: any) {
   const { t } = useTranslation();
   const refreshControl = useRef<boolean>(false);
   const scrollY = useRef(new Animated.Value(0)).current;
-  const { status } = useLocationPermission();
+  const { location } = useLocationPermission();
   const user = useSelector((state: any) => state.user.userInfo);
-  const [weather, setWeather] = useState<any>({
-    temp: 27,
-    wind: '9 km/h',
-    humidity: '88%',
-    aqi: 88,
-    icon: 'https://img.icons8.com/ios-filled/50/rain.png',
-    date: '21 Thg 08',
-  });
+  const { weather, loadWeather } = useWeather(
+    location?.latitude,
+    location?.longitude,
+  );
 
   const onRefresh = () => {
     refreshControl.current = true;
-    setTimeout(() => {
-      refreshControl.current = false;
-    }, 2000);
+    loadWeather()
+      .then(() => {
+        refreshControl.current = false;
+      })
+      .catch(() => {
+        refreshControl.current = false;
+      });
   };
 
   return (
@@ -82,22 +83,34 @@ export default function HomeScreen({ navigation }: any) {
             />
           </View>
           <View style={homeStyle.weatherCard}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Image
-                source={require('@assets/images/green-rain.webp')}
-                style={{ width: 100, height: 100 }}
+            {weather?.current?.condition?.icon ? (
+              <FastImage
+                source={{ uri: `https:${weather.current.condition.icon}` }}
+                style={{ width: 75, height: 75 }}
+                resizeMode={FastImage.resizeMode.contain}
               />
-            </View>
-            <Text style={homeStyle.weatherTemp}>{weather.temp}°</Text>
+            ) : (
+              <Image
+                source={require('@assets/images/rain.png')}
+                style={{ width: 60, height: 60 }}
+              />
+            )}
+            <Text style={homeStyle.weatherTemp}>
+              {weather?.current?.temp_c || 0}°
+            </Text>
             <View style={{ marginTop: 10 }}>
-              <Text style={homeStyle.weatherDetail}>{weather.date}</Text>
               <Text style={homeStyle.weatherDetail}>
-                {t('wind')}: {weather.wind}
+                {weather?.location?.name || ''}
               </Text>
               <Text style={homeStyle.weatherDetail}>
-                {t('humidity')}: {weather.humidity}
+                {t('wind')}: {weather?.current?.wind_kph || 0} kph
               </Text>
-              <Text style={homeStyle.weatherDetail}>AQI: {weather.aqi}</Text>
+              <Text style={homeStyle.weatherDetail}>
+                {t('humidity')}: {weather?.current?.humidity || 0} %
+              </Text>
+              <Text style={homeStyle.weatherDetail}>
+                AQI: {weather?.current?.air_quality?.co}
+              </Text>
             </View>
           </View>
           <View style={homeStyle.actionRow}>

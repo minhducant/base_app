@@ -105,8 +105,7 @@ export const homeStyle: any = {
     width: normalize(70), // giới hạn width, text sẽ wrap đẹp
   },
   banner: {
-    // backgroundColor: color.WHITE,
-    height: normalize(70),
+    height: normalize(50),
     borderRadius: normalize(16),
     justifyContent: 'center',
     alignItems: 'center',
@@ -135,17 +134,18 @@ export const homeStyle: any = {
     alignItems: 'center',
   },
   weatherCard: {
-    backgroundColor: color.WHITE,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginHorizontal: normalize(20),
-    padding: normalize(16),
+    marginHorizontal: normalize(24),
+    padding: normalize(8),
+    paddingHorizontal: normalize(16),
     marginVertical: normalize(16),
     borderRadius: normalize(16),
   },
   weatherTemp: {
-    fontSize: 35,
+    fontSize: 40,
     fontFamily: themeStyle.FONT_BOLD,
     color: color.MAIN,
     fontWeight: '700',
@@ -171,7 +171,7 @@ export const homeStyle: any = {
     marginTop: normalize(8),
   },
   surveyCard: {
-    backgroundColor: color.WHITE,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     flexDirection: 'row',
     alignItems: 'center',
     padding: normalize(16),
@@ -179,13 +179,13 @@ export const homeStyle: any = {
     borderRadius: normalize(16),
     marginBottom: normalize(16),
   },
-  questionCard:{
+  questionCard: {
     flexDirection: 'row',
     marginHorizontal: normalize(24),
     padding: normalize(16),
-    backgroundColor: color.WHITE,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     alignItems: 'center',
     marginBottom: normalize(16),
     borderRadius: normalize(16),
-  }
+  },
 };

@@ -1,8 +1,15 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  Platform,
+  NativeModules,
+  TouchableOpacity,
+} from 'react-native';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import FastImage from 'react-native-fast-image';
+import LinearGradient from 'react-native-linear-gradient';
 import { ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,13 +19,31 @@ import { userStyle } from '@styles/user.style';
 import { IconLibrary } from '@components/base/index';
 import { ActionButton } from '@components/home/actionButton';
 
+const getAppVersion = () => {
+  if (Platform.OS === 'ios') {
+    return (
+      NativeModules.SettingsManager?.settings?.CFBundleShortVersionString ??
+      '1.0.0'
+    );
+  } else if (Platform.OS === 'android') {
+    return NativeModules?.AppInfo?.versionName ?? '1.0.0';
+  }
+  return '1.0.0';
+};
+
 export default function UserScreen({ navigation }: any) {
   const { t } = useTranslation();
+  const appVersion = getAppVersion();
   const user = useSelector((state: any) => state.user.userInfo);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: color.WHITE }}>
-      <View style={[userStyle.container, { flex: 1 }]}>
+    <LinearGradient
+      end={{ x: 0, y: 1 }}
+      start={{ x: 0, y: 0 }}
+      style={userStyle.container}
+      colors={['#99EBD1', '#FBFBFC']}
+    >
+      <SafeAreaView>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={userStyle.scrollViewContent}
@@ -99,8 +124,11 @@ export default function UserScreen({ navigation }: any) {
             </TouchableOpacity>
           </View>
           <ActionButton title={t('sign_out')} onPress={onLogout} />
+          <Text style={[userStyle.txtVerion]}>
+            {t('version')}: {appVersion}
+          </Text>
         </ScrollView>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }

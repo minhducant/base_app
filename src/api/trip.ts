@@ -2,6 +2,8 @@ import { ApiUrl } from '@configs/apiUrl';
 import { client } from '@configs/axiosConfig';
 import { extraParams } from '@utils/apiResponse';
 
+const WEATHER_KEY = '71a447561061456e9da171620252609';
+
 export class TripApi {
   static async getTrips(params: any) {
     const response = await client.get(
@@ -35,5 +37,15 @@ export class TripApi {
       ApiUrl.trip.ongoing_trips + extraParams(params),
     );
     return response;
+  }
+  static async getWeatherByCoords(lat: number, lon: number) {
+    try {
+      const response = await client.get(
+        `https://api.weatherapi.com/v1/current.json?key=${WEATHER_KEY}&q=${lat},${lon}&aqi=yes`,
+      );
+      return response;
+    } catch (error) {
+      return null;
+    }
   }
 }

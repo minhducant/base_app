@@ -13,7 +13,9 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import normalize from 'react-native-normalize';
 import Geolocation from 'react-native-geolocation-service';
+import BackgroundFetch from "react-native-background-fetch";
 import { SafeAreaView } from 'react-native-safe-area-context';
+import BackgroundGeolocation from 'react-native-background-geolocation';
 
 import color from '@styles/color';
 import { TripApi } from '@api/trip';
@@ -30,6 +32,7 @@ const GOONG_API_KEY1 = 'ZvwsEuYSDZIusmqP31xt8jd3XIBF1rU0pF4gQwQV';
 const SelectOriginDestination = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const watchId = useRef<number | null>(null);
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const originInputRef = useRef<TextInput>(null);
   const destinationInputRef = useRef<TextInput>(null);
@@ -81,18 +84,89 @@ const SelectOriginDestination = () => {
     }
   }, [ongoingTrips]);
 
-  // useEffect(() => {
-  //   if (origin && destination && distanceText !== '') {
-  //     const distanceKm = parseFloat(distanceText.replace(/[^0-9.]/g, '')) || 0;
-  //     let suggestion = '';
-  //     if (distanceKm < 10) {
-  //       suggestion = 'Bạn nên đi xe máy 🏍';
-  //     } else {
-  //       suggestion = 'Bạn nên đi ô tô 🚗';
-  //     }
-  //     Alert.alert('Gợi ý phương tiện', suggestion, [{ text: 'OK' }]);
-  //   }
-  // }, [origin, destination, distanceText]);
+  useEffect(() => {
+    BackgroundGeolocation.onLocation(location => {
+      const coords: [number, number] = [
+        location.coords.longitude,
+        location.coords.latitude,
+      ];
+      setCurrentLocation(coords);
+      if (isTracking) {
+        if (routeCoords.length > 0) {
+          const lastCoord = routeCoords[routeCoords.length - 1];
+          const distance = calculateDistance(lastCoord, coords);
+          setTotalDistance(prev => prev + distance);
+  
+          const factor: Record<string, number> = {
+            car: 120,
+            motorcycle: 50,
+            bus: 30,
+            truck: 150,
+          };
+          setCo2Emitted(prev => prev + distance * factor[selectedVehicle]);
+          TripApi.updateTrip(ongoingTrips._id, {
+            coord: coords,
+            distance: totalDistance + distance,
+            co2: co2Emitted + distance * factor[selectedVehicle],
+            updatedAt: new Date(),
+          });
+        }
+        setRouteCoords(prev => [...prev, coords]);
+      }
+    });
+    BackgroundGeolocation.ready(
+      {
+        desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
+        distanceFilter: 10,
+        stopOnTerminate: false, 
+        startOnBoot: true, 
+      },
+      state => {
+        if (!state.enabled) {
+          BackgroundGeolocation.start();
+        }
+      },
+    );
+    return () => {
+      BackgroundGeolocation.removeAllListeners();
+    };
+  }, [isTracking, routeCoords, totalDistance, co2Emitted, selectedVehicle]);
+  
+
+
+  useEffect(() => {
+    if (origin && destination && distanceText !== '') {
+      const distanceKm = parseFloat(distanceText.replace(/[^0-9.]/g, '')) || 0;
+      if (!distanceKm) return;
+      const factors: Record<'car' | 'bike' | 'bus' | 'truck', number> = {
+        car: 120,
+        bike: 50,
+        bus: 30,
+        truck: 150,
+      };
+      const emissions = Object.entries(factors).map(([vehicle, factor]) => ({
+        vehicle,
+        co2: distanceKm * factor,
+      }));
+      const best = emissions.reduce((min, curr) =>
+        curr.co2 < min.co2 ? curr : min,
+      );
+      const vehicleName: any = {
+        car: t('car'),
+        bike: t('bike'),
+        bus: t('bus'),
+        truck: t('truck'),
+      };
+      Alert.alert(
+        t('transport_suggestion'),
+        `${t('distance')} ${distanceKm.toFixed(2)} km.\n` +
+          `${t('best_choice_to_reduce_co2')}: ${
+            vehicleName[best.vehicle]
+          } (${best.co2.toFixed(2)} g CO₂).`,
+        [{ text: 'OK' }],
+      );
+    }
+  }, [origin, destination, distanceText]);
 
   useEffect(() => {
     const fetchCurrentLocation = async () => {
@@ -107,7 +181,6 @@ const SelectOriginDestination = () => {
             position.coords.latitude,
           ];
           setCurrentLocation(coords);
-          console.log('Current location:', coords);
         },
         error => {
           showMessage.fail(t('error_get_current_location'));
@@ -153,6 +226,7 @@ const SelectOriginDestination = () => {
       setDurationText('0');
       setTotalDistance(0);
       setDistanceText('0');
+      BackgroundGeolocation.start();
       Geolocation.watchPosition(
         (position: { coords: { longitude: number; latitude: number } }) => {
           const coords: [number, number] = [
@@ -197,6 +271,7 @@ const SelectOriginDestination = () => {
       showMessage.success('Kết thúc chuyến đi thành công');
       setIsTracking(false);
       Geolocation.stopObserving();
+      BackgroundGeolocation.stop();
     } else {
       showMessage.fail('Kết thúc chuyến đi thất bại');
     }
@@ -365,7 +440,7 @@ const SelectOriginDestination = () => {
     { key: 'car', label: t('car') },
     { key: 'bike', label: t('bike') },
     { key: 'truck', label: t('truck') },
-    { key: 'taxi', label: t('taxi') },
+    { key: 'bus', label: t('bus') },
   ];
 
   return (
@@ -523,10 +598,10 @@ const SelectOriginDestination = () => {
             >
               <MapboxGL.Camera
                 ref={cameraRef}
-                centerCoordinate={[105.834, 21.0278]}
                 zoomLevel={11}
                 animationMode="none"
                 animationDuration={0}
+                centerCoordinate={currentLocation ?? undefined}
               />
               {currentLocation && (
                 <MapboxGL.PointAnnotation
@@ -586,17 +661,17 @@ const SelectOriginDestination = () => {
               )}
             </MapboxGL.MapView>
           </View>
-          {/* {distanceText !== '' && ( */}
-            <View style={styles.resultBox}>
-              <Text style={styles.text}>Khoảng cách: {distanceText}</Text>
-              <Text style={styles.text}>Thời gian: {durationText}</Text>
-              {/* {co2Estimates && ( */}
-              <Text style={styles.text}>
-                Ước tính CO₂: {co2Estimates?.toFixed(2)} g
-              </Text>
-              {/* )} */}
-            </View>
-          {/* )} */}
+          <View style={styles.resultBox}>
+            <Text style={styles.text}>
+              {t('distance')}: {distanceText || '0 km'}
+            </Text>
+            <Text style={styles.text}>
+              {t('duration')}: {durationText || '0 phút'}
+            </Text>
+            <Text style={styles.text}>
+              {t('co2_estimate')}: {co2Estimates?.toFixed(2) || 0} g
+            </Text>
+          </View>
           {!isTracking ? (
             <View style={styles.bottomButton}>
               <TouchableOpacity

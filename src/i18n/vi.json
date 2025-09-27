@@ -83,7 +83,6 @@
   "view_details": "Xem chi tiết",
   "ok": "Ok",
   "map": "Bản đồ",
-  "co2_estimate": "Ước tính CO₂",
   "choose_from_map": "Chọn từ bản đồ",
   "current_location": "Vị trí hiện tại",
   "please_select_from_to": "Vui lòng chọn điểm đi và điểm đến",
@@ -119,6 +118,7 @@
   "bike": "Xe máy 🏍",
   "truck": "Xe tải 🚚",
   "taxi": "Taxi 🚕",
+  "bus": "Xe buýt  🚌",
   "select_departure": "Chọn điểm đi...",
   "select_destination": "Chọn điểm đến...",
   "your_location": "Vị trí của bạn",
@@ -126,6 +126,12 @@
   "error_occurred_fetching_trips": "Đã xảy ra lỗi khi lấy dữ liệu chuyến đi",
   "you_should_take_motorbike": "Bạn nên đi xe máy 🏍",
   "you_should_take_car": "Bạn nên đi ô tô 🚗",
-   "error_occurred": "Có lỗi xảy ra, vui lòng thử lại!",
-  "cannot_create_trip": "Không thể tạo chuyến đi!"
+  "error_occurred": "Có lỗi xảy ra, vui lòng thử lại!",
+  "cannot_create_trip": "Không thể tạo chuyến đi!",
+  "version": "Phiên bản",
+  "distance": "Khoảng cách",
+  "duration": "Thời gian",
+  "co2_estimate": "Ước tính CO₂",
+  "transport_suggestion": "Gợi ý phương tiện",
+  "best_choice_to_reduce_co2": "Lựa chọn tốt nhất để giảm CO₂"
 }

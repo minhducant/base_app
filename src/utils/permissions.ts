@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Platform, Linking } from 'react-native';
 import { Settings } from 'react-native-fbsdk-next';
+import Geolocation, { GeoCoordinates } from 'react-native-geolocation-service';
 import { check, PERMISSIONS, RESULTS, request } from 'react-native-permissions';
 
 export type LocationPermissionStatus =
@@ -104,12 +105,12 @@ const getLocationPermission = () => {
 
 export const useLocationPermission = () => {
   const [status, setStatus] = useState<LocationPermissionStatus>('loading');
+  const [location, setLocation] = useState<GeoCoordinates | null>(null);
 
   const checkPermission = useCallback(async () => {
     try {
       const permission = getLocationPermission();
       const result = await check(permission);
-
       switch (result) {
         case RESULTS.UNAVAILABLE:
           setStatus('unavailable');
@@ -134,6 +135,22 @@ export const useLocationPermission = () => {
     }
   }, []);
 
+  const getCurrentLocation = useCallback(() => {
+    if (status !== 'granted') return;
+
+    Geolocation.getCurrentPosition(
+      position => {
+        setLocation(position.coords);
+      },
+      error => {},
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 10000,
+      },
+    );
+  }, [status]);
+
   const openSettings = useCallback(() => {
     Linking.openSettings();
   }, []);
@@ -142,5 +159,17 @@ export const useLocationPermission = () => {
     checkPermission();
   }, [checkPermission]);
 
-  return { status, checkPermission, openSettings };
+  useEffect(() => {
+    if (status === 'granted') {
+      getCurrentLocation();
+    }
+  }, [status, getCurrentLocation]);
+
+  return {
+    status,
+    location,
+    checkPermission,
+    getCurrentLocation,
+    openSettings,
+  };
 };

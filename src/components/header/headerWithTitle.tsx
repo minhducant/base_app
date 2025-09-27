@@ -73,7 +73,7 @@ export default function HeaderBackStatusBar({
                     library="Ionicons"
                     name="chevron-back"
                     size={25}
-                    color={Colors.BLACK}
+                    color={Colors.WHITE}
                   />
                 </TouchableOpacity>
               )}
@@ -87,7 +87,7 @@ export default function HeaderBackStatusBar({
                   library="AntDesign"
                   name="home"
                   size={20}
-                  color={Colors.BLACK}
+                  color={Colors.WHITE}
                 />
               </TouchableOpacity>
             ): (<View style={styles.viewBack}/>)}
@@ -100,10 +100,10 @@ export default function HeaderBackStatusBar({
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: Colors.WHITE,
+    backgroundColor: Colors.MAIN,
   },
   header: {
-    backgroundColor: Colors.WHITE,
+    backgroundColor: Colors.MAIN,
     paddingHorizontal: normalize(16),
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     // paddingBottom: normalize(10),
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     height: normalize(28, 'height'),
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 0.5,
+    // borderWidth: 0.5,
     borderRadius: normalize(10),
     borderColor: '#F3F4F6',
     marginRight: normalize(8),
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlignVertical: 'center',
     textAlign: 'center',
-    color: Colors.BLACK,
+    color: Colors.WHITE,
   },
   cartContainer: {
     width: normalize(28, 'height'),

@@ -75,7 +75,7 @@
   "destination": "Destination",
   "car": "Car  🚗",
   "motorbike": "Motorbike",
-  "bus": "Bus",
+  "bus": "Bus  🚌",
   "bicycle": "Bicycle",
   "transport_suggestion": "Transport Suggestions",
   "choose_transport": "Choose Transport",
@@ -99,7 +99,7 @@
   "chat": "Chat",
   "game": "Game",
   "wallet": "Wallet",
-  "eco_driving_tips": "Driving Tips",
+  "eco_driving_tips": "Tips",
   "wind": "Wind",
   "humidity": "Humidity",
   "reset": "Reset",
@@ -127,5 +127,10 @@
   "you_should_take_motorbike": "You should take a motorbike 🏍",
   "you_should_take_car": "You should take a car 🚗",
   "error_occurred": "An error occurred, please try again!",
-  "cannot_create_trip": "Cannot create trip!"
+  "cannot_create_trip": "Cannot create trip!",
+  "version": "Version",
+  "duration": "Duration",
+  "transport_suggestion": "Transport Suggestions",
+  "distance": "Distance",
+  "best_choice_to_reduce_co2": "Best choice to reduce CO₂"
 }

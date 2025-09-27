@@ -79,13 +79,13 @@
 	<key>NSContactsUsageDescription</key>
 	<string>Ứng dụng cần quyền danh bạ để kết nối bạn bè.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Ứng dụng cần quyền vị trí ngay cả khi không mở.</string>
+	<string>Ứng dụng cần quyền vị trí ngay cả khi đang chạy nền</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Ứng dụng cần quyền vị trí khi sử dụng.</string>
+	<string>Ứng dụng cần quyền vị trí khi đang sử dụng</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Ứng dụng cần quyền micro để ghi âm.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>Ứng dụng cần quyền cảm biến chuyển động.</string>
+	<string>Ứng dụng cần quyền cảm biến chuyển động để nhận biết thiết bị đang di chuyển</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Ứng dụng cần quyền ghi vào thư viện ảnh.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
@@ -133,6 +133,13 @@
 		<string>PlusJakartaSans-SemiBold.ttf</string>
 		<string>PlusJakartaSans-SemiBoldItalic.ttf</string>
 	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>location</string>
+		<string>bluetooth-peripheral</string>
+		<string>audio</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -147,5 +154,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.transistorsoft.fetch</string>
+	</array>
 </dict>
 </plist>
