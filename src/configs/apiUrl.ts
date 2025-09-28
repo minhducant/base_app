@@ -1,6 +1,6 @@
 export const API_PREFIX = '/api/v1';
 export const MAIN_DOMAIN = 'http://172.104.189.80:3003';
-// export const MAIN_DOMAIN = 'http://192.168.1.121:3003';
+// export const MAIN_DOMAIN = 'http://192.168.1.10:3003';
 
 export const ApiUrl = {
   auth: {
@@ -20,10 +20,10 @@ export const ApiUrl = {
   },
   trip: {
     get_trips: '/trips',
-    get_trip_detail: '/trips', // + /:id
+    get_trip_detail: '/trips', 
     create_trip: '/trips',
-    update_trip: '/trips', // + /:id
-    delete_trip: '/trips', // + /:id
+    update_trip: '/trips', 
+    delete_trip: '/trips',
     ongoing_trips: '/trips/ongoing',
   },
 };

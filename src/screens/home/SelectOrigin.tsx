@@ -12,14 +12,15 @@ import MapboxGL from '@rnmapbox/maps';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import normalize from 'react-native-normalize';
+import NetInfo from '@react-native-community/netinfo';
 import Geolocation from 'react-native-geolocation-service';
-import BackgroundFetch from "react-native-background-fetch";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BackgroundGeolocation from 'react-native-background-geolocation';
 
 import color from '@styles/color';
 import { TripApi } from '@api/trip';
 import { useTrip } from '@hooks/useTrip';
+import { LogTelegram } from '@utils/telegram';
 import { setIsLoading } from '@stores/action';
 import { mapStyle as styles } from '@styles/map.style';
 import { IconLibrary } from '@components/base/iconLibrary';
@@ -85,41 +86,63 @@ const SelectOriginDestination = () => {
   }, [ongoingTrips]);
 
   useEffect(() => {
-    BackgroundGeolocation.onLocation(location => {
+    // Listener khi có location mới
+    const onLocation = BackgroundGeolocation.onLocation(location => {
       const coords: [number, number] = [
         location.coords.longitude,
         location.coords.latitude,
       ];
       setCurrentLocation(coords);
+      LogTelegram(`📍 ${JSON.stringify(coords)}`);
       if (isTracking) {
-        if (routeCoords.length > 0) {
-          const lastCoord = routeCoords[routeCoords.length - 1];
-          const distance = calculateDistance(lastCoord, coords);
-          setTotalDistance(prev => prev + distance);
-  
+        setRouteCoords(prev => [...prev, coords]);
+        // Cập nhật distance + CO₂
+        setTotalDistance(prev => {
+          let newTotal = prev;
+          if (routeCoords.length > 0) {
+            const last = routeCoords[routeCoords.length - 1];
+            newTotal = prev + calculateDistance(last, coords);
+            setDistanceText(`${newTotal.toFixed(2)} km`);
+          }
           const factor: Record<string, number> = {
             car: 120,
             motorcycle: 50,
             bus: 30,
             truck: 150,
           };
-          setCo2Emitted(prev => prev + distance * factor[selectedVehicle]);
-          TripApi.updateTrip(ongoingTrips._id, {
-            coord: coords,
-            distance: totalDistance + distance,
-            co2: co2Emitted + distance * factor[selectedVehicle],
-            updatedAt: new Date(),
-          });
-        }
-        setRouteCoords(prev => [...prev, coords]);
+          const newCo2 = newTotal * factor[selectedVehicle];
+          setCo2Emitted(newCo2);
+          setCo2Estimates(newCo2);
+          if (startTime) {
+            const diffMin = Math.floor(
+              (Date.now() - startTime.getTime()) / 60000,
+            );
+            setDurationText(`${diffMin} phút`);
+          }
+          // Gửi lên BE
+          if (ongoingTrips?._id) {
+            TripApi.updateTrip(ongoingTrips._id, {
+              coord: coords,
+              distance: newTotal,
+              co2: newCo2,
+              updatedAt: new Date(),
+            });
+          }
+          return newTotal;
+        });
       }
     });
+    // Config
     BackgroundGeolocation.ready(
       {
         desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
-        distanceFilter: 10,
-        stopOnTerminate: false, 
-        startOnBoot: true, 
+        distanceFilter: 0, // luôn nhận update
+        locationUpdateInterval: 10000, // 10s 1 lần
+        fastestLocationUpdateInterval: 5000, // 10s/lần
+        stopOnTerminate: false, // app kill vẫn chạy
+        startOnBoot: true, // reboot máy vẫn chạy
+        foregroundService: true, // Android giữ service chạy nền
+        enableHeadless: true, // Android cho phép chạy khi app kill
       },
       state => {
         if (!state.enabled) {
@@ -128,11 +151,10 @@ const SelectOriginDestination = () => {
       },
     );
     return () => {
+      onLocation.remove();
       BackgroundGeolocation.removeAllListeners();
     };
-  }, [isTracking, routeCoords, totalDistance, co2Emitted, selectedVehicle]);
-  
-
+  }, [routeCoords, selectedVehicle, startTime, ongoingTrips]);
 
   useEffect(() => {
     if (origin && destination && distanceText !== '') {
@@ -180,6 +202,7 @@ const SelectOriginDestination = () => {
             position.coords.longitude,
             position.coords.latitude,
           ];
+          console.log('Current location:', position);
           setCurrentLocation(coords);
         },
         error => {
@@ -389,6 +412,26 @@ const SelectOriginDestination = () => {
     return coordinates;
   };
 
+  const selectCurrent = async () => {
+    if (!currentLocation) {
+      return showMessage.fail('Không lấy được vị trí hiện tại');
+    }
+    try {
+      const [lng, lat] = currentLocation;
+      setOrigin(currentLocation);
+      const res = await fetch(
+        `https://rsapi.goong.io/Geocode?latlng=${lat},${lng}&api_key=${GOONG_API_KEY}`,
+      );
+      const data = await res.json();
+      const address = data?.results?.[0]?.formatted_address ?? 'Không xác định';
+      setOriginText(address);
+      setSuggestions([]);
+      setSelecting(null);
+    } catch (error) {
+      showMessage.fail('Không thể lấy địa chỉ từ vị trí hiện tại');
+    }
+  };
+
   const fetchRoute = async (vehicle: any) => {
     if (!origin || !destination) return;
     try {
@@ -398,7 +441,6 @@ const SelectOriginDestination = () => {
       const data = await res.json();
       if (data?.routes?.length > 0) {
         const route = data.routes[0];
-        console.log('route', route);
         const coords = decodePolyline(route.overview_polyline.points);
         setRouteCoords(coords);
         // Fit camera
@@ -451,59 +493,87 @@ const SelectOriginDestination = () => {
         </View>
       ) : (
         <>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              ref={originInputRef}
-              style={styles.input}
-              editable={!isTracking}
-              placeholder={t('select_departure')}
-              value={selecting === 'origin' ? query : originText}
-              onFocus={() => setSelecting('origin')}
-              onChangeText={text => fetchSuggestions(text)}
-            />
-            {originText !== '' && !isTracking && (
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={() => {
-                  setOrigin(null);
-                  setOriginText('');
-                  setRouteCoords([]);
-                  setDistanceText('');
-                  setDurationText('');
-                  setCo2Estimates(null);
-                  originInputRef.current?.clear();
-                }}
-              >
-                <Text style={styles.text}>✖</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              ref={destinationInputRef}
-              style={styles.input}
-              editable={!isTracking}
-              placeholder={t('select_destination')}
-              value={selecting === 'destination' ? query : destinationText}
-              onFocus={() => setSelecting('destination')}
-              onChangeText={text => fetchSuggestions(text)}
-            />
-            {destinationText !== '' && !isTracking && (
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={() => {
-                  setDestination(null);
-                  setDestinationText('');
-                  setRouteCoords([]);
-                  setDistanceText('');
-                  setDurationText('');
-                  setCo2Estimates(null);
-                  destinationInputRef.current?.clear();
-                }}
-              >
-                <Text style={styles.text}>✖</Text>
-              </TouchableOpacity>
-            )}
+          <View style={styles.rowWrapper}>
+            <View style={styles.iconColumn}>
+              <IconLibrary
+                library="MaterialIcons"
+                name="my-location"
+                size={22}
+                color={color.MAIN}
+                style={{ marginBottom: normalize(8) }}
+              />
+              <IconLibrary
+                library="MaterialIcons"
+                name="more-vert"
+                size={22}
+                color="#555"
+                style={{ marginBottom: normalize(8) }}
+              />
+              <IconLibrary
+                library="MaterialIcons"
+                name="location-on"
+                size={22}
+                color={color.CRIMSON}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  ref={originInputRef}
+                  style={styles.input}
+                  editable={!isTracking}
+                  placeholderTextColor="#333"
+                  placeholder={t('select_departure')}
+                  onFocus={() => setSelecting('origin')}
+                  onChangeText={text => fetchSuggestions(text)}
+                  value={selecting === 'origin' ? query : originText}
+                />
+                {originText !== '' && !isTracking && (
+                  <TouchableOpacity
+                    style={styles.clearButton}
+                    onPress={() => {
+                      setOrigin(null);
+                      setOriginText('');
+                      setRouteCoords([]);
+                      setDistanceText('');
+                      setDurationText('');
+                      setCo2Estimates(null);
+                      originInputRef.current?.clear();
+                    }}
+                  >
+                    <Text style={styles.text}>✖</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  ref={destinationInputRef}
+                  style={styles.input}
+                  editable={!isTracking}
+                  placeholderTextColor="#333"
+                  placeholder={t('select_destination')}
+                  onFocus={() => setSelecting('destination')}
+                  onChangeText={text => fetchSuggestions(text)}
+                  value={selecting === 'destination' ? query : destinationText}
+                />
+                {destinationText !== '' && !isTracking && (
+                  <TouchableOpacity
+                    style={styles.clearButton}
+                    onPress={() => {
+                      setDestination(null);
+                      setDestinationText('');
+                      setRouteCoords([]);
+                      setDistanceText('');
+                      setDurationText('');
+                      setCo2Estimates(null);
+                      destinationInputRef.current?.clear();
+                    }}
+                  >
+                    <Text style={styles.text}>✖</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
           </View>
           {selecting && (
             <FlatList
@@ -512,16 +582,7 @@ const SelectOriginDestination = () => {
                 selecting === 'origin' ? (
                   <TouchableOpacity
                     style={styles.suggestionHeader}
-                    onPress={() => {
-                      if (currentLocation) {
-                        setOrigin(currentLocation);
-                        setOriginText(t('your_location'));
-                        setSuggestions([]);
-                        setSelecting(null);
-                      } else {
-                        showMessage.fail('Không lấy được vị trí hiện tại');
-                      }
-                    }}
+                    onPress={selectCurrent}
                   >
                     <IconLibrary
                       library="MaterialIcons"
@@ -621,9 +682,9 @@ const SelectOriginDestination = () => {
               {origin && (
                 <MapboxGL.PointAnnotation id="origin" coordinate={origin}>
                   <IconLibrary
-                    library="FontAwesome"
-                    name="map-marker"
-                    size={30}
+                    library="MaterialIcons"
+                    name="my-location"
+                    size={28}
                     color={color.MAIN}
                   />
                 </MapboxGL.PointAnnotation>
@@ -634,10 +695,10 @@ const SelectOriginDestination = () => {
                   coordinate={destination}
                 >
                   <IconLibrary
-                    library="FontAwesome"
-                    name="map-marker"
-                    size={30}
-                    color={color.MAIN}
+                    library="MaterialIcons"
+                    name="location-on"
+                    size={28}
+                    color={color.CRIMSON}
                   />
                 </MapboxGL.PointAnnotation>
               )}

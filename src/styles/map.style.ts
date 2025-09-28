@@ -18,16 +18,18 @@ export const mapStyle: any = {
     borderColor: '#ccc',
     borderRadius: normalize(8),
     marginVertical: 5,
-    paddingHorizontal: normalize(16),
-    marginHorizontal: normalize(16),
+    paddingHorizontal: normalize(12),
+    marginHorizontal: normalize(8),
+    marginRight: normalize(16),
   },
   input: {
     flex: 1,
     paddingVertical: 10,
     fontFamily: themeStyle.FONT_FAMILY,
     fontSize: 14,
+    color: color.BLACK,
   },
-  clearButton: { padding: 5 },
+  clearButton: { padding: 0 },
   suggestionItem: {
     padding: 10,
     backgroundColor: '#f9f9f9',
@@ -114,5 +116,18 @@ export const mapStyle: any = {
     backgroundColor: '#f9f9f9',
     borderBottomWidth: 1,
     borderColor: '#eee',
+  },
+  loadingOverlay: {
+    top: normalize(200),
+  },
+  rowWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  iconColumn: {
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    marginLeft: normalize(8),
+    paddingTop: normalize(8),
   },
 };
