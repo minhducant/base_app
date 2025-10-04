@@ -27,41 +27,138 @@ import { IconLibrary } from '@components/base/iconLibrary';
 import { useLocationPermission } from '@utils/permissions';
 import { showMessage, calculateVehicleCO } from '@utils/index';
 
-const GOONG_API_KEY = 'DkSBL9dah2pFOo3jb6zV1LdnzERvk6uLJTIjyryG';
-const GOONG_API_KEY1 = 'ZvwsEuYSDZIusmqP31xt8jd3XIBF1rU0pF4gQwQV';
+const GOONG_API_KEY = 'gwDzlAb8g0zJCMbZOpIZcZZC2c7jQcpmHqNYEqXu';
+const GOONG_API_KEY1 = '2yGbwvmxDzSnhqqU2nWLJdnY4LlozlWcLdg7GVtF';
+MapboxGL.setAccessToken(GOONG_API_KEY1);
 
 const SelectOriginDestination = () => {
-  const { t } = useTranslation();
-  const dispatch = useDispatch();
-  const watchId = useRef<number | null>(null);
-  const cameraRef = useRef<MapboxGL.Camera>(null);
-  const originInputRef = useRef<TextInput>(null);
-  const destinationInputRef = useRef<TextInput>(null);
-  const { status, checkPermission, openSettings } = useLocationPermission();
+  // UI state
+  const [isTracking, setIsTracking] = useState(false);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Trip state
   const [origin, setOrigin] = useState<[number, number] | null>(null);
   const [destination, setDestination] = useState<[number, number] | null>(null);
   const [originText, setOriginText] = useState('');
   const [destinationText, setDestinationText] = useState('');
   const [routeCoords, setRouteCoords] = useState<[number, number][]>([]);
-  const [query, setQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [selecting, setSelecting] = useState<'origin' | 'destination' | null>(
-    null,
-  );
-  const [distanceText, setDistanceText] = useState('');
-  const [durationText, setDurationText] = useState('');
-  const [co2Estimates, setCo2Estimates] = useState<any>(null);
-  const [selectedVehicle, setSelectedVehicle] = useState<
-    'car' | 'motorcycle' | 'bus' | 'bike'
-  >('car');
-  const [isTracking, setIsTracking] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState<
-    [number, number] | null
-  >(null);
+  const [currentLocation, setCurrentLocation] = useState<[number, number] | null>(null);
   const [totalDistance, setTotalDistance] = useState(0);
   const [co2Emitted, setCo2Emitted] = useState(0);
   const [startTime, setStartTime] = useState<Date | null>(null);
-  const { ongoingTrips, loading } = useTrip();
+  const [distanceText, setDistanceText] = useState('');
+  const [durationText, setDurationText] = useState('');
+  const [co2Estimates, setCo2Estimates] = useState<any>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<'car' | 'motorcycle' | 'bus' | 'bike'>('car');
+
+  // Search state (separate for origin/destination)
+  const [originQuery, setOriginQuery] = useState('');
+  const [originSuggestions, setOriginSuggestions] = useState<any[]>([]);
+  const [destinationQuery, setDestinationQuery] = useState('');
+  const [destinationSuggestions, setDestinationSuggestions] = useState<any[]>([]);
+  const [selecting, setSelecting] = useState<'origin' | 'destination' | null>(null);
+
+  // Hooks and refs
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const cameraRef = useRef<MapboxGL.Camera>(null);
+  const originInputRef = useRef<TextInput>(null);
+  const destinationInputRef = useRef<TextInput>(null);
+  const { status, checkPermission, openSettings } = useLocationPermission();
+  const { ongoingTrips } = useTrip();
+  const ongoingTripsRef = useRef(ongoingTrips);
+
+  // Fit camera to route coordinates (same logic as fetchRoute)
+  const fitRouteCameraToCoords = (coords: [number, number][]) => {
+    if (!coords || coords.length === 0) return;
+    let minLng = Infinity,
+      minLat = Infinity,
+      maxLng = -Infinity,
+      maxLat = -Infinity;
+    coords.forEach(([lng, lat]) => {
+      if (lng < minLng) minLng = lng;
+      if (lat < minLat) minLat = lat;
+      if (lng > maxLng) maxLng = lng;
+      if (lat > maxLat) maxLat = lat;
+    });
+    const deltaLng = Math.abs(maxLng - minLng);
+    const deltaLat = Math.abs(maxLat - minLat);
+    let padding = 50;
+    if (deltaLng < 0.001 && deltaLat < 0.001) {
+      padding = 0;
+    } else if (deltaLng < 0.003 && deltaLat < 0.003) {
+      padding = 10;
+    } else if (deltaLng < 0.01 && deltaLat < 0.01) {
+      padding = 30;
+    } else if (deltaLng < 0.05 && deltaLat < 0.05) {
+      padding = 100;
+    }
+    if (cameraRef.current) {
+      cameraRef.current.fitBounds(
+        [minLng, minLat],
+        [maxLng, maxLat],
+        padding,
+        1000,
+      );
+      if (deltaLng < 0.002 && deltaLat < 0.002) {
+        const centerLng = (minLng + maxLng) / 2;
+        const centerLat = (minLat + maxLat) / 2;
+        setTimeout(() => {
+          cameraRef.current?.setCamera({
+            centerCoordinate: [centerLng, centerLat],
+            zoomLevel: 17,
+            animationDuration: 800,
+          });
+        }, 1100);
+      }
+    }
+  };
+
+  // Helper: Reset all state to initial
+  const resetAllState = () => {
+    setOrigin(null);
+    setDestination(null);
+    setOriginText('');
+    setDestinationText('');
+    setRouteCoords([]);
+    setDistanceText('');
+    setDurationText('');
+    setCo2Estimates(null);
+    setTotalDistance(0);
+    setCo2Emitted(0);
+    setStartTime(null);
+    setOriginQuery('');
+    setOriginSuggestions([]);
+    setDestinationQuery('');
+    setDestinationSuggestions([]);
+    setSelecting(null);
+    setIsTracking(false);
+    setCurrentLocation(null);
+  };
+
+  useEffect(() => {
+    ongoingTripsRef.current = ongoingTrips;
+  }, [ongoingTrips]);
+
+  // Cleanup khi unmount hoặc mất mạng
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      if (isTracking && state.isConnected === false) {
+        stopTracking();
+        resetAllState();
+        showMessage.fail('Mất kết nối mạng, hành trình đã kết thúc và dữ liệu đã được reset.');
+      }
+    });
+    return () => {
+      unsubscribe();
+      if (isTracking) {
+        stopTracking();
+        resetAllState();
+        showMessage.fail('Bạn đã thoát app, hành trình đã kết thúc và dữ liệu đã được reset.');
+      }
+    };
+  }, [isTracking]);
 
   useEffect(() => {
     if (ongoingTrips && Object.keys(ongoingTrips).length > 0) {
@@ -95,41 +192,45 @@ const SelectOriginDestination = () => {
       setCurrentLocation(coords);
       LogTelegram(`📍 ${JSON.stringify(coords)}`);
       if (isTracking) {
-        setRouteCoords(prev => [...prev, coords]);
-        // Cập nhật distance + CO₂
-        setTotalDistance(prev => {
-          let newTotal = prev;
-          if (routeCoords.length > 0) {
-            const last = routeCoords[routeCoords.length - 1];
-            newTotal = prev + calculateDistance(last, coords);
-            setDistanceText(`${newTotal.toFixed(2)} km`);
+        // Nếu đã đến gần điểm đích thì tự động kết thúc
+        if (destination) {
+          const toRad = (value: number) => (value * Math.PI) / 180;
+          const R = 6371; // km
+          const dLat = toRad(destination[1] - coords[1]);
+          const dLon = toRad(destination[0] - coords[0]);
+          const lat1 = toRad(coords[1]);
+          const lat2 = toRad(destination[1]);
+          const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const dist = R * c * 1000; // mét
+          if (dist < 30) {
+            stopTracking();
+            setShowSummaryModal(true);
+            return;
           }
-          const factor: Record<string, number> = {
-            car: 120,
-            motorcycle: 50,
-            bus: 30,
-            truck: 150,
-          };
-          const newCo2 = newTotal * factor[selectedVehicle];
-          setCo2Emitted(newCo2);
-          setCo2Estimates(newCo2);
-          if (startTime) {
-            const diffMin = Math.floor(
-              (Date.now() - startTime.getTime()) / 60000,
-            );
-            setDurationText(`${diffMin} phút`);
-          }
-          // Gửi lên BE
-          if (ongoingTrips?._id) {
-            TripApi.updateTrip(ongoingTrips._id, {
-              coord: coords,
-              distance: newTotal,
-              co2: newCo2,
-              updatedAt: new Date(),
-            });
-          }
-          return newTotal;
-        });
+        }
+        // Khi tracking: chỉ cập nhật currentLocation, không cập nhật routeCoords, không tính lại distance/duration/co2_estimate
+      } else if (origin && destination && routeCoords.length > 1) {
+        // Khi KHÔNG tracking: cập nhật distance, duration, co2_estimate dựa trên routeCoords (tuyến đường đã chọn)
+        let total = 0;
+        for (let i = 1; i < routeCoords.length; i++) {
+          total += calculateDistance(routeCoords[i - 1], routeCoords[i]);
+        }
+        setTotalDistance(total);
+        setDistanceText(`${total.toFixed(2)} km`);
+        // Tính CO2
+        const factor: Record<string, number> = {
+          car: 120,
+          motorcycle: 50,
+          bus: 30,
+          truck: 150,
+        };
+        const co2 = total * factor[selectedVehicle];
+        setCo2Emitted(co2);
+        setCo2Estimates(co2);
+        // Duration: giả lập 30km/h
+        const duration = total / 30 * 60; // phút
+        setDurationText(`${Math.round(duration)} phút`);
       }
     });
     // Config
@@ -157,7 +258,7 @@ const SelectOriginDestination = () => {
   }, [routeCoords, selectedVehicle, startTime, ongoingTrips]);
 
   useEffect(() => {
-    if (origin && destination && distanceText !== '') {
+    if (!isTracking && origin && destination && distanceText !== '') {
       const distanceKm = parseFloat(distanceText.replace(/[^0-9.]/g, '')) || 0;
       if (!distanceKm) return;
       const factors: Record<'car' | 'bike' | 'bus' | 'truck', number> = {
@@ -181,14 +282,14 @@ const SelectOriginDestination = () => {
       };
       Alert.alert(
         t('transport_suggestion'),
-        `${t('distance')} ${distanceKm.toFixed(2)} km.\n` +
+        `${t('distance')} ${distanceText} \n` +
           `${t('best_choice_to_reduce_co2')}: ${
             vehicleName[best.vehicle]
           } (${best.co2.toFixed(2)} g CO₂).`,
         [{ text: 'OK' }],
       );
     }
-  }, [origin, destination, distanceText]);
+  }, [origin, destination, distanceText, isTracking]);
 
   useEffect(() => {
     const fetchCurrentLocation = async () => {
@@ -221,6 +322,38 @@ const SelectOriginDestination = () => {
     }
   }, [origin, destination]);
 
+  // Add useEffect to follow user when tracking
+  // Chỉ follow user khi đang tracking và user đã di chuyển khỏi origin
+  const hasMovedFromOrigin = (currentLocation: [number, number] | null, origin: [number, number] | null) => {
+    if (!currentLocation || !origin) return false;
+    // Nếu khác biệt > 5m mới follow (giảm nhảy camera do sai số GPS)
+    const toRad = (value: number) => (value * Math.PI) / 180;
+    const R = 6371000; // m
+    const dLat = toRad(currentLocation[1] - origin[1]);
+    const dLon = toRad(currentLocation[0] - origin[0]);
+    const lat1 = toRad(origin[1]);
+    const lat2 = toRad(currentLocation[1]);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const dist = R * c;
+    return dist > 5;
+  };
+
+  useEffect(() => {
+    if (
+      isTracking &&
+      currentLocation &&
+      cameraRef.current &&
+      hasMovedFromOrigin(currentLocation, origin)
+    ) {
+      cameraRef.current.setCamera({
+        centerCoordinate: currentLocation,
+        zoomLevel: 17,
+        animationDuration: 800,
+      });
+    }
+  }, [isTracking, currentLocation, origin]);
+
   const startTracking = async () => {
     if (!status || status !== 'granted') {
       openSettings();
@@ -244,35 +377,15 @@ const SelectOriginDestination = () => {
         return;
       }
       setIsTracking(true);
+      if (origin) {
+        setCurrentLocation(origin);
+      }
       setStartTime(new Date());
       setCo2Estimates(0);
       setDurationText('0');
       setTotalDistance(0);
       setDistanceText('0');
       BackgroundGeolocation.start();
-      Geolocation.watchPosition(
-        (position: { coords: { longitude: number; latitude: number } }) => {
-          const coords: [number, number] = [
-            position.coords.longitude,
-            position.coords.latitude,
-          ];
-          setCurrentLocation(coords);
-          if (routeCoords.length > 0) {
-            const lastCoord = routeCoords[routeCoords.length - 1];
-            const distance = calculateDistance(lastCoord, coords);
-            setTotalDistance(prev => prev + distance);
-            const factor: any = {
-              car: 120,
-              motorcycle: 50,
-              bus: 30,
-              bike: 0,
-            };
-            setCo2Emitted(prev => prev + distance * factor[selectedVehicle]);
-          }
-        },
-        (error: any) => {},
-        { enableHighAccuracy: true, distanceFilter: 10 },
-      );
     } catch (err) {
       showMessage.fail(t('error_occurred'));
     } finally {
@@ -290,9 +403,10 @@ const SelectOriginDestination = () => {
       endedAt: new Date(),
       status: 'ended',
     });
-    if (res?.code === 200) {
+  if (res?.code === 200) {
       showMessage.success('Kết thúc chuyến đi thành công');
       setIsTracking(false);
+      setShowSummaryModal(true);
       Geolocation.stopObserving();
       BackgroundGeolocation.stop();
     } else {
@@ -321,7 +435,7 @@ const SelectOriginDestination = () => {
   const handleEndTrip = () => {
     setIsTracking(false);
     Alert.alert(
-      'Trip Ended',
+      'Đặt lại',
       `Total Distance: ${totalDistance.toFixed(
         2,
       )} km\nCO₂ Emitted: ${co2Emitted.toFixed(2)}`,
@@ -335,25 +449,55 @@ const SelectOriginDestination = () => {
     setDestinationText('');
   };
 
-  const fetchSuggestions = async (text: string) => {
-    setQuery(text);
-    if (text.length < 2) return;
+  // Fetch suggestions for origin
+  const fetchOriginSuggestions = async (text: string) => {
+    setOriginQuery(text);
+    if (text.length < 2) {
+      setOriginSuggestions([]);
+      return;
+    }
     try {
       const res = await fetch(
         `https://rsapi.goong.io/Place/AutoComplete?api_key=${GOONG_API_KEY}&input=${text}`,
       );
       const data = await res.json();
-      setSuggestions(data.predictions || []);
+      setOriginSuggestions(data.predictions || []);
     } catch (err) {
+      setOriginSuggestions([]);
       console.error('Autocomplete error:', err);
     }
   };
 
+  // Fetch suggestions for destination
+  const fetchDestinationSuggestions = async (text: string) => {
+    setDestinationQuery(text);
+    if (text.length < 2) {
+      setDestinationSuggestions([]);
+      return;
+    }
+    try {
+      const res = await fetch(
+        `https://rsapi.goong.io/Place/AutoComplete?api_key=${GOONG_API_KEY}&input=${text}`,
+      );
+      const data = await res.json();
+      setDestinationSuggestions(data.predictions || []);
+    } catch (err) {
+      setDestinationSuggestions([]);
+      console.error('Autocomplete error:', err);
+    }
+  };
+
+  // Handle select suggestion for origin or destination
   const handleSelectSuggestion = async (
     placeId: string,
     description: string,
+    type: 'origin' | 'destination',
   ) => {
-    setSuggestions([]);
+    if (type === 'origin') {
+      setOriginSuggestions([]);
+    } else {
+      setDestinationSuggestions([]);
+    }
     setSelecting(null);
     try {
       const res = await fetch(
@@ -362,16 +506,18 @@ const SelectOriginDestination = () => {
       const data = await res.json();
       const loc = data.result.geometry.location;
       const coords: [number, number] = [loc.lng, loc.lat];
-      if (selecting === 'origin') {
+      if (type === 'origin') {
         setOrigin(coords);
         setOriginText(data.result.formatted_address || description);
-      } else if (selecting === 'destination') {
+        setOriginQuery('');
+        setOriginSuggestions([]);
+      } else if (type === 'destination') {
         setDestination(coords);
         setDestinationText(data.result.formatted_address || description);
+        setDestinationQuery('');
+        setDestinationSuggestions([]);
       }
-      setQuery('');
       setSelecting(null);
-      setSuggestions([]);
     } catch (err) {
       console.error('Place detail error:', err);
     }
@@ -425,7 +571,7 @@ const SelectOriginDestination = () => {
       const data = await res.json();
       const address = data?.results?.[0]?.formatted_address ?? 'Không xác định';
       setOriginText(address);
-      setSuggestions([]);
+  // setSuggestions([]); // obsolete after refactor
       setSelecting(null);
     } catch (error) {
       showMessage.fail('Không thể lấy địa chỉ từ vị trí hiện tại');
@@ -454,13 +600,40 @@ const SelectOriginDestination = () => {
           if (lng > maxLng) maxLng = lng;
           if (lat > maxLat) maxLat = lat;
         });
-        if (cameraRef.current) {
+        // Tính khoảng cách lat/lng
+        const deltaLng = Math.abs(maxLng - minLng);
+        const deltaLat = Math.abs(maxLat - minLat);
+        // Nếu khoảng cách nhỏ, giảm padding để zoom to bản đồ hơn
+        let padding = 50;
+        if (deltaLng < 0.001 && deltaLat < 0.001) {
+          padding = 0; // cực gần, zoom sát nhất
+        } else if (deltaLng < 0.003 && deltaLat < 0.003) {
+          padding = 10;
+        } else if (deltaLng < 0.01 && deltaLat < 0.01) {
+          padding = 30;
+        } else if (deltaLng < 0.05 && deltaLat < 0.05) {
+          padding = 100;
+        }
+        // Chỉ fit camera khi chưa tracking
+        if (!isTracking && cameraRef.current) {
           cameraRef.current.fitBounds(
             [minLng, minLat],
             [maxLng, maxLat],
-            50,
+            padding,
             1000,
           );
+          // Nếu rất gần, zoom cực sát vào trung điểm
+          if (deltaLng < 0.002 && deltaLat < 0.002) {
+            const centerLng = (minLng + maxLng) / 2;
+            const centerLat = (minLat + maxLat) / 2;
+            setTimeout(() => {
+              cameraRef.current?.setCamera({
+                centerCoordinate: [centerLng, centerLat],
+                zoomLevel: 17,
+                animationDuration: 800,
+              });
+            }, 1100); // delay để fitBounds xong mới setCamera
+          }
         }
         if (!isTracking) {
           setDistanceText(route.legs[0].distance.text);
@@ -525,8 +698,8 @@ const SelectOriginDestination = () => {
                   placeholderTextColor="#333"
                   placeholder={t('select_departure')}
                   onFocus={() => setSelecting('origin')}
-                  onChangeText={text => fetchSuggestions(text)}
-                  value={selecting === 'origin' ? query : originText}
+                  onChangeText={text => fetchOriginSuggestions(text)}
+                  value={selecting === 'origin' ? originQuery : originText}
                 />
                 {originText !== '' && !isTracking && (
                   <TouchableOpacity
@@ -553,8 +726,8 @@ const SelectOriginDestination = () => {
                   placeholderTextColor="#333"
                   placeholder={t('select_destination')}
                   onFocus={() => setSelecting('destination')}
-                  onChangeText={text => fetchSuggestions(text)}
-                  value={selecting === 'destination' ? query : destinationText}
+                  onChangeText={text => fetchDestinationSuggestions(text)}
+                  value={selecting === 'destination' ? destinationQuery : destinationText}
                 />
                 {destinationText !== '' && !isTracking && (
                   <TouchableOpacity
@@ -575,27 +748,50 @@ const SelectOriginDestination = () => {
               </View>
             </View>
           </View>
-          {selecting && (
+          {selecting === 'origin' && (
             <FlatList
-              data={suggestions}
+              data={originSuggestions}
               ListHeaderComponent={
-                selecting === 'origin' ? (
-                  <TouchableOpacity
-                    style={styles.suggestionHeader}
-                    onPress={selectCurrent}
-                  >
-                    <IconLibrary
-                      library="MaterialIcons"
-                      name="location-on"
-                      size={20}
-                      color="#333"
-                    />
-                    <Text style={[styles.text, { marginLeft: 8 }]}>
-                      {t('your_location')}
-                    </Text>
-                  </TouchableOpacity>
-                ) : null
+                <TouchableOpacity
+                  style={styles.suggestionHeader}
+                  onPress={selectCurrent}
+                >
+                  <IconLibrary
+                    library="MaterialIcons"
+                    name="location-on"
+                    size={20}
+                    color="#333"
+                  />
+                  <Text style={[styles.text, { marginLeft: 8 }]}> 
+                    {t('your_location')}
+                  </Text>
+                </TouchableOpacity>
               }
+              style={{
+                position: 'absolute',
+                top: normalize(100),
+                left: 10,
+                right: 10,
+                zIndex: 1,
+                backgroundColor: '#fff',
+                borderRadius: 5,
+              }}
+              keyExtractor={item => item.place_id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.suggestionItem}
+                  onPress={() =>
+                    handleSelectSuggestion(item.place_id, item.description, 'origin')
+                  }
+                >
+                  <Text style={styles.text}>{item.description}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          )}
+          {selecting === 'destination' && destinationQuery.length > 0 && (
+            <FlatList
+              data={destinationSuggestions}
               style={{
                 position: 'absolute',
                 top: normalize(150),
@@ -610,7 +806,7 @@ const SelectOriginDestination = () => {
                 <TouchableOpacity
                   style={styles.suggestionItem}
                   onPress={() =>
-                    handleSelectSuggestion(item.place_id, item.description)
+                    handleSelectSuggestion(item.place_id, item.description, 'destination')
                   }
                 >
                   <Text style={styles.text}>{item.description}</Text>
@@ -760,6 +956,58 @@ const SelectOriginDestination = () => {
               >
                 <Text style={styles.buttonText}>{t('end_journey')}</Text>
               </TouchableOpacity>
+            </View>
+          )}
+          {showSummaryModal && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.4)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 999,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: '#fff',
+                  borderRadius: 12,
+                  padding: 24,
+                  minWidth: 260,
+                  alignItems: 'center',
+                }}
+              >
+                <Text
+                  style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}
+                >
+                  {t('summary') || 'Tổng kết'}
+                </Text>
+                <Text style={{ fontSize: 16, marginBottom: 8 }}>{`Bạn đã đi ${(
+                  totalDistance || 0
+                ).toFixed(2)} km`}</Text>
+                <Text
+                  style={{ fontSize: 16, marginBottom: 16 }}
+                >{`Tiêu thụ hết ${(co2Emitted || 0).toFixed(2)} g CO₂`}</Text>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: color.MAIN,
+                    borderRadius: 8,
+                    paddingVertical: 8,
+                    paddingHorizontal: 24,
+                  }}
+                  onPress={() => setShowSummaryModal(false)}
+                >
+                  <Text
+                    style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}
+                  >
+                    Đóng
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
         </>
