@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  Switch,
 } from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
 import { useDispatch } from 'react-redux';
@@ -37,6 +38,11 @@ const SelectOriginDestination = () => {
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const alertShownRef = useRef(false);
+
+  // them xe
+  const [vehicleFuelType, setVehicleFuelType] = useState<
+    'gasoline' | 'electric'
+  >('gasoline');
 
   // Trip state
   const [origin, setOrigin] = useState<[number, number] | null>(null);
@@ -199,7 +205,6 @@ const SelectOriginDestination = () => {
         location.coords.latitude,
       ];
       setCurrentLocation(coords);
-      LogTelegram(`📍 ${JSON.stringify(coords)}`);
       if (isTracking) {
         // Tính quãng đường thực tế đã đi
         let added = 0;
@@ -480,6 +485,7 @@ const SelectOriginDestination = () => {
       showMessage.fail('Kết thúc chuyến đi thất bại');
     }
     dispatch(setIsLoading(false));
+    resetAllState();
   };
 
   const calculateDistance = (
@@ -987,8 +993,44 @@ const SelectOriginDestination = () => {
               )}
             </MapboxGL.MapView>
           </View>
-          // ...existing code...
           <View style={styles.resultBoxRow}>
+            {origin && destination && (
+              <View
+                style={{
+                  width: '35%',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                <IconLibrary
+                  library="MaterialCommunityIcons"
+                  name={vehicleFuelType === 'electric' ? 'car-electric' : 'car'}
+                  size={22}
+                  color={vehicleFuelType === 'electric' ? color.MAIN : '#888'}
+                  style={{ marginRight: 6 }}
+                />
+                <Text
+                  style={{
+                    color: vehicleFuelType === 'electric' ? color.MAIN : '#333',
+                    marginRight: 8,
+                  }}
+                >
+                  {vehicleFuelType === 'electric' ? 'Điện' : 'Xăng'}
+                </Text>
+                <Switch
+                  value={vehicleFuelType === 'electric'}
+                  onValueChange={val =>
+                    setVehicleFuelType(val ? 'electric' : 'gasoline')
+                  }
+                  thumbColor={
+                    vehicleFuelType === 'electric' ? color.MAIN : '#ccc'
+                  }
+                  trackColor={{ false: '#ccc', true: color.MAIN }}
+                />
+                </View>
+              </View>
+            )}
             <View style={styles.resultCol}>
               <IconLibrary
                 library="MaterialIcons"

@@ -12,6 +12,7 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 
 import {
@@ -25,6 +26,7 @@ import {
 import { useWeather } from '@hooks/useWeather';
 import { homeStyle } from '@styles/home.style';
 import { useLocationPermission } from '@utils/permissions';
+import TripModal from '@components/TripModal';
 
 export default function HomeScreen({ navigation }: any) {
   const { t } = useTranslation();
@@ -37,6 +39,8 @@ export default function HomeScreen({ navigation }: any) {
     location?.longitude,
   );
 
+  const [showTripModal, setShowTripModal] = useState(false);
+
   const onRefresh = () => {
     refreshControl.current = true;
     loadWeather()
@@ -46,6 +50,36 @@ export default function HomeScreen({ navigation }: any) {
       .catch(() => {
         refreshControl.current = false;
       });
+  };
+
+  const calculateTripEmission = (tripData: any) => {
+    // Công thức tính toán đơn giản - bạn có thể tùy chỉnh theo yêu cầu
+    const estimatedDistance = Math.floor(Math.random() * 100) + 10; // km (mock data)
+
+    let co2PerKm = 0;
+    if (tripData.vehicle === 'car') {
+      co2PerKm = tripData.fuelType === 'electric' ? 0.05 : 0.12; // kg CO2/km
+    } else if (tripData.vehicle === 'plane') {
+      co2PerKm = 0.25;
+    } else if (tripData.vehicle === 'train') {
+      co2PerKm = 0.04;
+    } else if (tripData.vehicle === 'bus') {
+      co2PerKm = 0.08;
+    } else if (tripData.vehicle === 'motorbike') {
+      co2PerKm = tripData.fuelType === 'electric' ? 0.02 : 0.09;
+    }
+
+    const totalCO2 = (estimatedDistance * co2PerKm).toFixed(2);
+
+    Alert.alert(
+      'Kết quả tính toán',
+      `Khoảng cách ước tính: ${estimatedDistance} km\nLượng CO2 phát thải: ${totalCO2} kg\n\nTừ: ${tripData.startPoint}\nĐến: ${tripData.endPoint}\nPhương tiện: ${tripData.vehicle}\nNhiên liệu: ${tripData.fuelType}`,
+      [{ text: 'OK' }],
+    );
+  };
+
+  const handleTripSubmit = (tripData: any) => {
+    calculateTripEmission(tripData);
   };
 
   return (
@@ -153,7 +187,10 @@ export default function HomeScreen({ navigation }: any) {
               </TouchableOpacity>
             </View>
           </View>
-          <View style={homeStyle.questionCard}>
+          <TouchableOpacity
+            style={homeStyle.questionCard}
+            onPress={() => setShowTripModal(true)}
+          >
             <QuestionVector />
             <View>
               <Text style={homeStyle.surveyTitle}>
@@ -163,11 +200,17 @@ export default function HomeScreen({ navigation }: any) {
                 {t('today_trip_request')}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
           <View style={homeStyle.banner}>
             <Text style={homeStyle.bannerText}>ECOMOVE</Text>
           </View>
         </ScrollView>
+
+        <TripModal
+          visible={showTripModal}
+          onClose={() => setShowTripModal(false)}
+          onSubmit={handleTripSubmit}
+        />
       </SafeAreaView>
     </LinearGradient>
   );
