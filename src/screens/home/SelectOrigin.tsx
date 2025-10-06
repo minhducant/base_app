@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  Switch,
 } from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
 import { useDispatch } from 'react-redux';
@@ -38,27 +39,40 @@ const SelectOriginDestination = () => {
   const [loading, setLoading] = useState(false);
   const alertShownRef = useRef(false);
 
+  // them xe
+  const [vehicleFuelType, setVehicleFuelType] = useState<
+    'gasoline' | 'electric'
+  >('gasoline');
+
   // Trip state
   const [origin, setOrigin] = useState<[number, number] | null>(null);
   const [destination, setDestination] = useState<[number, number] | null>(null);
   const [originText, setOriginText] = useState('');
   const [destinationText, setDestinationText] = useState('');
   const [routeCoords, setRouteCoords] = useState<[number, number][]>([]);
-  const [currentLocation, setCurrentLocation] = useState<[number, number] | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<
+    [number, number] | null
+  >(null);
   const [totalDistance, setTotalDistance] = useState(0);
   const [co2Emitted, setCo2Emitted] = useState(0);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [distanceText, setDistanceText] = useState('');
   const [durationText, setDurationText] = useState('');
   const [co2Estimates, setCo2Estimates] = useState<any>(null);
-  const [selectedVehicle, setSelectedVehicle] = useState<'car' | 'motorcycle' | 'bus' | 'bike'>('car');
+  const [selectedVehicle, setSelectedVehicle] = useState<
+    'car' | 'motorcycle' | 'bus' | 'bike'
+  >('car');
 
   // Search state (separate for origin/destination)
   const [originQuery, setOriginQuery] = useState('');
   const [originSuggestions, setOriginSuggestions] = useState<any[]>([]);
   const [destinationQuery, setDestinationQuery] = useState('');
-  const [destinationSuggestions, setDestinationSuggestions] = useState<any[]>([]);
-  const [selecting, setSelecting] = useState<'origin' | 'destination' | null>(null);
+  const [destinationSuggestions, setDestinationSuggestions] = useState<any[]>(
+    [],
+  );
+  const [selecting, setSelecting] = useState<'origin' | 'destination' | null>(
+    null,
+  );
 
   // Hooks and refs
   const { t } = useTranslation();
@@ -136,7 +150,7 @@ const SelectOriginDestination = () => {
     setDestinationSuggestions([]);
     setSelecting(null);
     setIsTracking(false);
-    setCurrentLocation(null);
+    // setCurrentLocation(null);
   };
 
   useEffect(() => {
@@ -157,7 +171,7 @@ const SelectOriginDestination = () => {
       });
     }
   }, [isTracking, currentLocation, origin]);
-// ...existing code...
+  // ...existing code...
 
   useEffect(() => {
     if (ongoingTrips && Object.keys(ongoingTrips).length > 0) {
@@ -191,7 +205,6 @@ const SelectOriginDestination = () => {
         location.coords.latitude,
       ];
       setCurrentLocation(coords);
-      LogTelegram(`📍 ${JSON.stringify(coords)}`);
       if (isTracking) {
         // Tính quãng đường thực tế đã đi
         let added = 0;
@@ -219,8 +232,14 @@ const SelectOriginDestination = () => {
             const diff = (now.getTime() - startTime.getTime()) / 1000; // giây
             let durationStr = '';
             if (diff < 60) durationStr = `${Math.round(diff)} giây`;
-            else if (diff < 3600) durationStr = `${Math.floor(diff/60)} phút ${Math.round(diff%60)} giây`;
-            else durationStr = `${Math.floor(diff/3600)} giờ ${Math.floor((diff%3600)/60)} phút`;
+            else if (diff < 3600)
+              durationStr = `${Math.floor(diff / 60)} phút ${Math.round(
+                diff % 60,
+              )} giây`;
+            else
+              durationStr = `${Math.floor(diff / 3600)} giờ ${Math.floor(
+                (diff % 3600) / 60,
+              )} phút`;
             setDurationText(durationStr);
           }
           // Kiểm tra đến đích
@@ -231,10 +250,16 @@ const SelectOriginDestination = () => {
             const dLon = toRad(destination[0] - coords[0]);
             const lat1 = toRad(coords[1]);
             const lat2 = toRad(destination[1]);
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+            const a =
+              Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.sin(dLon / 2) *
+                Math.sin(dLon / 2) *
+                Math.cos(lat1) *
+                Math.cos(lat2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             const dist = R * c * 1000; // mét
             if (dist < 100) {
+              setIsTracking(false);
               stopTracking();
               setShowSummaryModal(true);
               return newTotal;
@@ -261,7 +286,7 @@ const SelectOriginDestination = () => {
         setCo2Emitted(co2);
         setCo2Estimates(co2);
         // Duration: giả lập 30km/h
-        const duration = total / 30 * 60; // phút
+        const duration = (total / 30) * 60; // phút
         setDurationText(`${Math.round(duration)} phút`);
       }
     });
@@ -290,7 +315,13 @@ const SelectOriginDestination = () => {
   }, [routeCoords, selectedVehicle, startTime, ongoingTrips]);
 
   useEffect(() => {
-    if (!isTracking && origin && destination && distanceText !== '' && !alertShownRef.current) {
+    if (
+      !isTracking &&
+      origin &&
+      destination &&
+      distanceText !== '' &&
+      !alertShownRef.current
+    ) {
       const distanceKm = parseFloat(distanceText.replace(/[^0-9.]/g, '')) || 0;
       if (!distanceKm) return;
       const factors: Record<'car' | 'bike' | 'bus' | 'truck', number> = {
@@ -361,7 +392,10 @@ const SelectOriginDestination = () => {
 
   // Add useEffect to follow user when tracking
   // Chỉ follow user khi đang tracking và user đã di chuyển khỏi origin
-  const hasMovedFromOrigin = (currentLocation: [number, number] | null, origin: [number, number] | null) => {
+  const hasMovedFromOrigin = (
+    currentLocation: [number, number] | null,
+    origin: [number, number] | null,
+  ) => {
     if (!currentLocation || !origin) return false;
     // Nếu khác biệt > 1m mới follow (giảm nhảy camera do sai số GPS)
     const toRad = (value: number) => (value * Math.PI) / 180;
@@ -370,7 +404,9 @@ const SelectOriginDestination = () => {
     const dLon = toRad(currentLocation[0] - origin[0]);
     const lat1 = toRad(origin[1]);
     const lat2 = toRad(currentLocation[1]);
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const dist = R * c;
     return dist > 1;
@@ -439,7 +475,7 @@ const SelectOriginDestination = () => {
       endedAt: new Date(),
       status: 'ended',
     });
-  if (res?.code === 200) {
+    if (res?.code === 200) {
       showMessage.success('Kết thúc chuyến đi thành công');
       setIsTracking(false);
       setShowSummaryModal(true);
@@ -449,6 +485,7 @@ const SelectOriginDestination = () => {
       showMessage.fail('Kết thúc chuyến đi thất bại');
     }
     dispatch(setIsLoading(false));
+    resetAllState();
   };
 
   const calculateDistance = (
@@ -469,20 +506,12 @@ const SelectOriginDestination = () => {
   };
 
   const handleEndTrip = () => {
-    setIsTracking(false);
-    Alert.alert(
-      'Đặt lại',
-      `Total Distance: ${totalDistance.toFixed(
-        2,
-      )} km\nCO₂ Emitted: ${co2Emitted.toFixed(2)}`,
-    );
-    setTotalDistance(0);
-    setCo2Emitted(0);
-    setRouteCoords([]);
-    setOrigin(null);
-    setDestination(null);
-    setOriginText('');
-    setDestinationText('');
+    // setDistanceText('');
+    // setDurationText('');
+    // setCo2Estimates(null);
+    // setOriginText('');
+    // setDestinationText('');
+    resetAllState();
   };
 
   // Fetch suggestions for origin
@@ -607,14 +636,13 @@ const SelectOriginDestination = () => {
       const data = await res.json();
       const address = data?.results?.[0]?.formatted_address ?? 'Không xác định';
       setOriginText(address);
-  // setSuggestions([]); // obsolete after refactor
+      // setSuggestions([]); // obsolete after refactor
       setSelecting(null);
     } catch (error) {
       showMessage.fail('Không thể lấy địa chỉ từ vị trí hiện tại');
     }
   };
 
-  
   const fetchRoute = async (vehicle: any) => {
     if (!origin || !destination) return;
     try {
@@ -764,7 +792,11 @@ const SelectOriginDestination = () => {
                   placeholder={t('select_destination')}
                   onFocus={() => setSelecting('destination')}
                   onChangeText={text => fetchDestinationSuggestions(text)}
-                  value={selecting === 'destination' ? destinationQuery : destinationText}
+                  value={
+                    selecting === 'destination'
+                      ? destinationQuery
+                      : destinationText
+                  }
                 />
                 {destinationText !== '' && !isTracking && (
                   <TouchableOpacity
@@ -799,7 +831,7 @@ const SelectOriginDestination = () => {
                     size={20}
                     color="#333"
                   />
-                  <Text style={[styles.text, { marginLeft: 8 }]}> 
+                  <Text style={[styles.text, { marginLeft: 8 }]}>
                     {t('your_location')}
                   </Text>
                 </TouchableOpacity>
@@ -818,7 +850,11 @@ const SelectOriginDestination = () => {
                 <TouchableOpacity
                   style={styles.suggestionItem}
                   onPress={() =>
-                    handleSelectSuggestion(item.place_id, item.description, 'origin')
+                    handleSelectSuggestion(
+                      item.place_id,
+                      item.description,
+                      'origin',
+                    )
                   }
                 >
                   <Text style={styles.text}>{item.description}</Text>
@@ -843,7 +879,11 @@ const SelectOriginDestination = () => {
                 <TouchableOpacity
                   style={styles.suggestionItem}
                   onPress={() =>
-                    handleSelectSuggestion(item.place_id, item.description, 'destination')
+                    handleSelectSuggestion(
+                      item.place_id,
+                      item.description,
+                      'destination',
+                    )
                   }
                 >
                   <Text style={styles.text}>{item.description}</Text>
@@ -953,17 +993,103 @@ const SelectOriginDestination = () => {
               )}
             </MapboxGL.MapView>
           </View>
-          <View style={styles.resultBox}>
-            <Text style={styles.text}>
-              {t('distance')}: {distanceText || '0 km'}
-            </Text>
-            <Text style={styles.text}>
-              {t('duration')}: {durationText || '0 phút'}
-            </Text>
-            <Text style={styles.text}>
-              {t('co2_estimate')}: {co2Estimates?.toFixed(2) || 0} g
-            </Text>
+          <View style={styles.resultBoxRow}>
+            {origin && destination && (
+              <View
+                style={{
+                  width: '35%',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                <IconLibrary
+                  library="MaterialCommunityIcons"
+                  name={vehicleFuelType === 'electric' ? 'car-electric' : 'car'}
+                  size={22}
+                  color={vehicleFuelType === 'electric' ? color.MAIN : '#888'}
+                  style={{ marginRight: 6 }}
+                />
+                <Text
+                  style={{
+                    color: vehicleFuelType === 'electric' ? color.MAIN : '#333',
+                    marginRight: 8,
+                  }}
+                >
+                  {vehicleFuelType === 'electric' ? 'Điện' : 'Xăng'}
+                </Text>
+                <Switch
+                  value={vehicleFuelType === 'electric'}
+                  onValueChange={val =>
+                    setVehicleFuelType(val ? 'electric' : 'gasoline')
+                  }
+                  thumbColor={
+                    vehicleFuelType === 'electric' ? color.MAIN : '#ccc'
+                  }
+                  trackColor={{ false: '#ccc', true: color.MAIN }}
+                />
+                </View>
+              </View>
+            )}
+            <View style={styles.resultCol}>
+              <IconLibrary
+                library="MaterialIcons"
+                name="straighten"
+                size={22}
+                color={color.MAIN}
+                style={{ marginBottom: 4 }}
+              />
+              <Text
+                style={[styles.text, { color: color.MAIN, fontWeight: 'bold' }]}
+              >
+                {distanceText || '0 km'}
+              </Text>
+              <Text style={[styles.text, { fontSize: 12, color: '#888' }]}>
+                {t('distance')}
+              </Text>
+            </View>
+            <View style={styles.resultCol}>
+              <IconLibrary
+                library="MaterialIcons"
+                name="schedule"
+                size={22}
+                color={color.ORANGE}
+                style={{ marginBottom: 4 }}
+              />
+              <Text
+                style={[
+                  styles.text,
+                  { color: color.ORANGE, fontWeight: 'bold' },
+                ]}
+              >
+                {durationText || '0 phút'}
+              </Text>
+              <Text style={[styles.text, { fontSize: 12, color: '#888' }]}>
+                {t('duration')}
+              </Text>
+            </View>
+            <View style={styles.resultCol}>
+              <IconLibrary
+                library="MaterialCommunityIcons"
+                name="cloud-outline"
+                size={22}
+                color={color.CRIMSON}
+                style={{ marginBottom: 4 }}
+              />
+              <Text
+                style={[
+                  styles.text,
+                  { color: color.CRIMSON, fontWeight: 'bold' },
+                ]}
+              >
+                {co2Estimates?.toFixed(2) || 0} g
+              </Text>
+              <Text style={[styles.text, { fontSize: 12, color: '#888' }]}>
+                {t('co2_estimate')}
+              </Text>
+            </View>
           </View>
+          // ...existing code...
           {!isTracking ? (
             <View style={styles.bottomButton}>
               <TouchableOpacity
@@ -1052,4 +1178,3 @@ const SelectOriginDestination = () => {
 };
 
 export default SelectOriginDestination;
-

@@ -11,6 +11,27 @@ export const mapStyle: any = {
     flex: 1,
     backgroundColor: color.WHITE,
   },
+  // ...existing code...
+  resultBoxRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    margin: 12,
+    padding: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  resultCol: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // ...existing code...
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
