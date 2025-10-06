@@ -36,6 +36,7 @@ const SelectOriginDestination = () => {
   const [isTracking, setIsTracking] = useState(false);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const alertShownRef = useRef(false);
 
   // Trip state
   const [origin, setOrigin] = useState<[number, number] | null>(null);
@@ -94,7 +95,8 @@ const SelectOriginDestination = () => {
     } else if (deltaLng < 0.05 && deltaLat < 0.05) {
       padding = 100;
     }
-    if (cameraRef.current) {
+    // Chỉ fit camera khi chưa tracking
+    if (!isTracking && cameraRef.current) {
       cameraRef.current.fitBounds(
         [minLng, minLat],
         [maxLng, maxLat],
@@ -110,7 +112,7 @@ const SelectOriginDestination = () => {
             zoomLevel: 17,
             animationDuration: 800,
           });
-        }, 1100);
+        }, 1100); // delay để fitBounds xong mới setCamera
       }
     }
   };
@@ -141,24 +143,21 @@ const SelectOriginDestination = () => {
     ongoingTripsRef.current = ongoingTrips;
   }, [ongoingTrips]);
 
-  // Cleanup khi unmount hoặc mất mạng
+  // Chỉ update center khi tracking, không set lại zoomLevel để tránh zoom in/out liên tục
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener(state => {
-      if (isTracking && state.isConnected === false) {
-        stopTracking();
-        resetAllState();
-        showMessage.fail('Mất kết nối mạng, hành trình đã kết thúc và dữ liệu đã được reset.');
-      }
-    });
-    return () => {
-      unsubscribe();
-      if (isTracking) {
-        stopTracking();
-        resetAllState();
-        showMessage.fail('Bạn đã thoát app, hành trình đã kết thúc và dữ liệu đã được reset.');
-      }
-    };
-  }, [isTracking]);
+    if (
+      isTracking &&
+      currentLocation &&
+      cameraRef.current &&
+      hasMovedFromOrigin(currentLocation, origin)
+    ) {
+      cameraRef.current.setCamera({
+        centerCoordinate: currentLocation,
+        animationDuration: 800,
+      });
+    }
+  }, [isTracking, currentLocation, origin]);
+// ...existing code...
 
   useEffect(() => {
     if (ongoingTrips && Object.keys(ongoingTrips).length > 0) {
@@ -184,6 +183,8 @@ const SelectOriginDestination = () => {
 
   useEffect(() => {
     // Listener khi có location mới
+    // Lưu vị trí trước đó để tính quãng đường thực tế khi tracking
+    const prevLocationRef = { current: null as [number, number] | null };
     const onLocation = BackgroundGeolocation.onLocation(location => {
       const coords: [number, number] = [
         location.coords.longitude,
@@ -192,24 +193,55 @@ const SelectOriginDestination = () => {
       setCurrentLocation(coords);
       LogTelegram(`📍 ${JSON.stringify(coords)}`);
       if (isTracking) {
-        // Nếu đã đến gần điểm đích thì tự động kết thúc
-        if (destination) {
-          const toRad = (value: number) => (value * Math.PI) / 180;
-          const R = 6371; // km
-          const dLat = toRad(destination[1] - coords[1]);
-          const dLon = toRad(destination[0] - coords[0]);
-          const lat1 = toRad(coords[1]);
-          const lat2 = toRad(destination[1]);
-          const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const dist = R * c * 1000; // mét
-          if (dist < 30) {
-            stopTracking();
-            setShowSummaryModal(true);
-            return;
-          }
+        // Tính quãng đường thực tế đã đi
+        let added = 0;
+        if (prevLocationRef.current) {
+          added = calculateDistance(prevLocationRef.current, coords);
         }
-        // Khi tracking: chỉ cập nhật currentLocation, không cập nhật routeCoords, không tính lại distance/duration/co2_estimate
+        prevLocationRef.current = coords;
+        // Cộng dồn quãng đường
+        setTotalDistance(prev => {
+          const newTotal = prev + added;
+          // Tính CO2
+          const factor: Record<string, number> = {
+            car: 120,
+            motorcycle: 50,
+            bus: 30,
+            truck: 150,
+          };
+          const co2 = newTotal * factor[selectedVehicle];
+          setCo2Emitted(co2);
+          setCo2Estimates(co2);
+          setDistanceText(`${newTotal.toFixed(2)} km`);
+          // Duration thực tế
+          if (startTime) {
+            const now = new Date();
+            const diff = (now.getTime() - startTime.getTime()) / 1000; // giây
+            let durationStr = '';
+            if (diff < 60) durationStr = `${Math.round(diff)} giây`;
+            else if (diff < 3600) durationStr = `${Math.floor(diff/60)} phút ${Math.round(diff%60)} giây`;
+            else durationStr = `${Math.floor(diff/3600)} giờ ${Math.floor((diff%3600)/60)} phút`;
+            setDurationText(durationStr);
+          }
+          // Kiểm tra đến đích
+          if (destination) {
+            const toRad = (value: number) => (value * Math.PI) / 180;
+            const R = 6371; // km
+            const dLat = toRad(destination[1] - coords[1]);
+            const dLon = toRad(destination[0] - coords[0]);
+            const lat1 = toRad(coords[1]);
+            const lat2 = toRad(destination[1]);
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const dist = R * c * 1000; // mét
+            if (dist < 100) {
+              stopTracking();
+              setShowSummaryModal(true);
+              return newTotal;
+            }
+          }
+          return newTotal;
+        });
       } else if (origin && destination && routeCoords.length > 1) {
         // Khi KHÔNG tracking: cập nhật distance, duration, co2_estimate dựa trên routeCoords (tuyến đường đã chọn)
         let total = 0;
@@ -238,8 +270,8 @@ const SelectOriginDestination = () => {
       {
         desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
         distanceFilter: 0, // luôn nhận update
-        locationUpdateInterval: 10000, // 10s 1 lần
-        fastestLocationUpdateInterval: 5000, // 10s/lần
+        locationUpdateInterval: 5000, // 5s 1 lần
+        fastestLocationUpdateInterval: 2000, // 2s/lần
         stopOnTerminate: false, // app kill vẫn chạy
         startOnBoot: true, // reboot máy vẫn chạy
         foregroundService: true, // Android giữ service chạy nền
@@ -258,7 +290,7 @@ const SelectOriginDestination = () => {
   }, [routeCoords, selectedVehicle, startTime, ongoingTrips]);
 
   useEffect(() => {
-    if (!isTracking && origin && destination && distanceText !== '') {
+    if (!isTracking && origin && destination && distanceText !== '' && !alertShownRef.current) {
       const distanceKm = parseFloat(distanceText.replace(/[^0-9.]/g, '')) || 0;
       if (!distanceKm) return;
       const factors: Record<'car' | 'bike' | 'bus' | 'truck', number> = {
@@ -288,6 +320,11 @@ const SelectOriginDestination = () => {
           } (${best.co2.toFixed(2)} g CO₂).`,
         [{ text: 'OK' }],
       );
+      alertShownRef.current = true;
+    }
+    // Reset lại khi chọn lại route mới hoặc reset
+    if (!isTracking && (!origin || !destination || distanceText === '')) {
+      alertShownRef.current = false;
     }
   }, [origin, destination, distanceText, isTracking]);
 
@@ -326,7 +363,7 @@ const SelectOriginDestination = () => {
   // Chỉ follow user khi đang tracking và user đã di chuyển khỏi origin
   const hasMovedFromOrigin = (currentLocation: [number, number] | null, origin: [number, number] | null) => {
     if (!currentLocation || !origin) return false;
-    // Nếu khác biệt > 5m mới follow (giảm nhảy camera do sai số GPS)
+    // Nếu khác biệt > 1m mới follow (giảm nhảy camera do sai số GPS)
     const toRad = (value: number) => (value * Math.PI) / 180;
     const R = 6371000; // m
     const dLat = toRad(currentLocation[1] - origin[1]);
@@ -336,7 +373,7 @@ const SelectOriginDestination = () => {
     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const dist = R * c;
-    return dist > 5;
+    return dist > 1;
   };
 
   useEffect(() => {
@@ -348,7 +385,6 @@ const SelectOriginDestination = () => {
     ) {
       cameraRef.current.setCamera({
         centerCoordinate: currentLocation,
-        zoomLevel: 17,
         animationDuration: 800,
       });
     }
@@ -855,10 +891,8 @@ const SelectOriginDestination = () => {
             >
               <MapboxGL.Camera
                 ref={cameraRef}
-                zoomLevel={11}
                 animationMode="none"
                 animationDuration={0}
-                centerCoordinate={currentLocation ?? undefined}
               />
               {currentLocation && (
                 <MapboxGL.PointAnnotation
@@ -984,7 +1018,7 @@ const SelectOriginDestination = () => {
                 <Text
                   style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}
                 >
-                  {t('summary') || 'Tổng kết'}
+                  {t('end_journey') || 'Tổng kết'}
                 </Text>
                 <Text style={{ fontSize: 16, marginBottom: 8 }}>{`Bạn đã đi ${(
                   totalDistance || 0
@@ -1017,3 +1051,4 @@ const SelectOriginDestination = () => {
 };
 
 export default SelectOriginDestination;
+
