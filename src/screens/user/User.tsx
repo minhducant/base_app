@@ -45,8 +45,9 @@ export default function UserScreen({ navigation }: any) {
     >
       <SafeAreaView>
         <ScrollView
+          scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={userStyle.scrollViewContent}
+          style={userStyle.scrollViewContent}
         >
           <TouchableOpacity>
             <FastImage
@@ -58,23 +59,53 @@ export default function UserScreen({ navigation }: any) {
           <Text style={userStyle.txtName}>{user?.name}</Text>
           <Text style={userStyle.titleFunction}>{t('trip')}</Text>
           <View style={userStyle.functionCard}>
-            <TouchableOpacity style={userStyle.functionItem}>
+            <TouchableOpacity
+              style={userStyle.functionItem}
+              onPress={() =>
+                navigation.navigate('NoFooter', {
+                  screen: 'JournalScreen',
+                })
+              }
+            >
               <IconLibrary
                 library="Octicons"
                 name="history"
                 size={20}
                 color={color.MAIN}
               />
-              <Text style={userStyle.txtFunction}>{t('trip_history')}</Text>
+              <Text style={userStyle.txtFunction}>{t('trip_journal')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={userStyle.functionItem}>
+            <TouchableOpacity
+              style={userStyle.functionItem}
+              onPress={() =>
+                navigation.navigate('NoFooter', {
+                  screen: 'GoalScreen',
+                })
+              }
+            >
               <IconLibrary
-                library="Feather"
-                name="users"
+                library="Entypo"
+                name="flag"
                 size={20}
                 color={color.MAIN}
               />
-              <Text style={userStyle.txtFunction}>{t('refer_friends')}</Text>
+              <Text style={userStyle.txtFunction}>{t('monthly_goal')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={userStyle.functionItem}
+              onPress={() =>
+                navigation.navigate('NoFooter', {
+                  screen: 'ReportScreen',
+                })
+              }
+            >
+              <IconLibrary
+                library="MaterialIcons"
+                name="insert-chart-outlined"
+                size={24}
+                color={color.MAIN}
+              />
+              <Text style={userStyle.txtFunction}>{t('emission_report')}</Text>
             </TouchableOpacity>
           </View>
           <Text style={userStyle.titleFunction}>{t('utilities')}</Text>

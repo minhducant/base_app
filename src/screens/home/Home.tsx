@@ -23,10 +23,11 @@ import {
   SurveyVector,
   QuestionVector,
 } from '@assets/icons';
+import TripModal from '@components/TripModal';
 import { useWeather } from '@hooks/useWeather';
 import { homeStyle } from '@styles/home.style';
+import ProgressBar from '@components/home/progressBar'
 import { useLocationPermission } from '@utils/permissions';
-import TripModal from '@components/TripModal';
 
 export default function HomeScreen({ navigation }: any) {
   const { t } = useTranslation();
@@ -175,6 +176,11 @@ export default function HomeScreen({ navigation }: any) {
               <Text style={homeStyle.txtActionItem}>{t('wallet')}</Text>
             </TouchableOpacity>
           </View>
+          <View style={homeStyle.progressCard}>
+            <Text style={homeStyle.titleProgressCard}>{t('progress')}</Text>
+            <Text style={homeStyle.valueProgressCard}>144 g CO₂ 🌱</Text>
+            <ProgressBar current={35} max={100} />
+          </View>
           <View style={homeStyle.surveyCard}>
             <SurveyVector />
             <View>
@@ -205,7 +211,6 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={homeStyle.bannerText}>ECOMOVE</Text>
           </View>
         </ScrollView>
-
         <TripModal
           visible={showTripModal}
           onClose={() => setShowTripModal(false)}

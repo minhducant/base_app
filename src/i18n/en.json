@@ -132,5 +132,20 @@
   "duration": "Duration",
   "transport_suggestion": "Transport Suggestions",
   "distance": "Distance",
-  "best_choice_to_reduce_co2": "Best choice to reduce CO₂"
+  "best_choice_to_reduce_co2": "Best choice to reduce CO₂",
+  "trip_journal": "Trip Journal",
+  "monthly_goal": "Monthly Goal",
+  "emission_report": "Emission Report",
+  "add_trip": "Add Trip",
+  "update_trip": "Update Trip",
+  "no_journal": "No trip journal yet",
+  "minute": "Minute",
+  "month": "Month",
+  "add_co2_goal": "Add Goal",
+  "add_goal_success": "Goal added successfully",
+  "add_goal_failed": "Failed to add goal",
+  "add_emission_reduction_goal": "Add emission reduction goal",
+  "enter_target_co2": "Enter target CO₂",
+  "emission_reduction_goal": "Emission reduction goal",
+  "progress": "Progress"
 }

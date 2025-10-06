@@ -9,7 +9,7 @@ export class TripApi {
     const response = await client.get(
       ApiUrl.trip.get_trips + extraParams(params),
     );
-    return response.data;
+    return response;
   }
   static async getTripDetail(id: string, params: any) {
     const response = await client.get(
@@ -47,5 +47,15 @@ export class TripApi {
     } catch (error) {
       return null;
     }
+  }
+  static async getGoal(params: any) {
+    const response = await client.get(
+      ApiUrl.goal.get_goal + extraParams(params),
+    );
+    return response;
+  }
+  static async creatGoal(params: any) {
+    const response = await client.post(ApiUrl.goal.create_goal, params);
+    return response;
   }
 }

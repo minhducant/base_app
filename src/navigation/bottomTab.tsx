@@ -10,6 +10,10 @@ import { useAsyncApp } from '@utils/asyncApp';
 import { navigationStyle } from '@styles/navigation.style';
 import { IconHome, IconMap, IconUser } from '@assets/icons';
 
+import GoalScreen from '@screens/user/Goal';
+import ReportScreen from '@screens/user/Report';
+import JournalScreen from '@screens/user/Journal';
+import CreateJournalScreen from '@screens/user/CreateJournal';
 import ChangeLanguageScreen from '@screens/user/ChangeLanguage';
 import SelectLocationScreen from '@screens/home/SelectLocation';
 import SelectOriginDestination from '@screens/home/SelectOrigin';
@@ -21,6 +25,10 @@ const screenOptions = { headerShown: false };
 
 function NoFooter() {
   const screens: any = [
+    GoalScreen,
+    ReportScreen,
+    JournalScreen,
+    CreateJournalScreen,
     SelectLocationScreen,
     ChangeLanguageScreen,
     SelectOriginDestination,

@@ -53,6 +53,10 @@ PODS:
     - MapboxMobileEvents (= 2.0.0)
     - Turf (= 2.8.0)
   - MapboxMobileEvents (2.0.0)
+  - Picker (4.3.7):
+    - Picker/Core (= 4.3.7)
+  - Picker/Core (4.3.7):
+    - React
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -3020,6 +3024,7 @@ DEPENDENCIES:
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+  - Picker (from `../node_modules/react-native-picker`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../node_modules/react-native/Libraries/Required`)
@@ -3146,6 +3151,8 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-2025-07-07-RNv0.81.0-e0fc67142ec0763c6b6153ca2bf96df815539782
+  Picker:
+    :path: "../node_modules/react-native-picker"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -3336,6 +3343,7 @@ SPEC CHECKSUMS:
   MapboxCoreMaps: 35685edba03e44468aed57c3dfd7f8795edafda8
   MapboxMaps: f87023cf0d72b180b40ea0b6fb4b2d7db6b73b71
   MapboxMobileEvents: d044b9edbe0ec7df60f6c2c9634fe9a7f449266b
+  Picker: 94d2218a9f89c063154da89f0187e8e4e9de3346
   RCT-Folly: 846fda9475e61ec7bcbf8a3fe81edfcaeb090669
   RCTDeprecation: c0ed3249a97243002615517dff789bf4666cf585
   RCTRequired: 58719f5124f9267b5f9649c08bf23d9aea845b23

@@ -188,4 +188,25 @@ export const homeStyle: any = {
     marginBottom: normalize(16),
     borderRadius: normalize(16),
   },
+  progressCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    padding: normalize(16),
+    marginHorizontal: normalize(24),
+    borderRadius: normalize(16),
+    marginBottom: normalize(16),
+  },
+  titleProgressCard: {
+    fontSize: 16,
+    fontFamily: themeStyle.FONT_BOLD,
+    color: color.BLACK,
+    fontWeight: '700',
+    marginBottom: normalize(8),
+  },
+  valueProgressCard: {
+    fontSize: 18,
+    fontFamily: themeStyle.FONT_FAMILY,
+    color: color.BLACK,
+    marginBottom: normalize(16),
+    textAlign: "center"
+  },
 };

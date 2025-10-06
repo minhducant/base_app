@@ -132,5 +132,20 @@
   "distance": "Khoảng cách",
   "duration": "Thời gian",
   "co2_estimate": "Ước tính CO₂",
-  "best_choice_to_reduce_co2": "Lựa chọn tốt nhất để giảm CO₂"
+  "best_choice_to_reduce_co2": "Lựa chọn tốt nhất để giảm CO₂",
+  "trip_journal": "Nhật ký hành trình",
+  "monthly_goal": "Mục tiêu tháng",
+  "emission_report": "Báo cáo phát thải",
+  "add_trip": "Thêm hành trình",
+  "update_trip": "Cập nhật hành trình",
+  "no_journal": "Chưa có nhật ký hành trình nào",
+  "minute": "Phút",
+  "month": "Tháng",
+  "add_co2_goal": "Thêm mục tiêu",
+  "add_goal_success": "Thêm mới mục tiêu thành công",
+  "add_goal_failed": "Thêm mới mục tiêu thất bại",
+  "add_emission_reduction_goal": "Thêm mục tiêu giảm phát thải",
+  "enter_target_co2": "Nhập mục tiêu CO₂",
+  "emission_reduction_goal": "Mục tiêu giảm phát thải",
+  "progress": "Tiến độ giảm phát thải"
 }
