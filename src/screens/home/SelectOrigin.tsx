@@ -614,6 +614,7 @@ const SelectOriginDestination = () => {
     }
   };
 
+  
   const fetchRoute = async (vehicle: any) => {
     if (!origin || !destination) return;
     try {
