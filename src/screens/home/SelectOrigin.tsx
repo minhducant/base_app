@@ -38,6 +38,7 @@ const SelectOriginDestination = () => {
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const alertShownRef = useRef(false);
+  const [currentTripId, setCurrentTripId] = useState<string | null>(null);
 
   // them xe
   const [vehicleFuelType, setVehicleFuelType] = useState<
@@ -448,6 +449,7 @@ const SelectOriginDestination = () => {
         dispatch(setIsLoading(false));
         return;
       }
+      setCurrentTripId(res._id || res.client_id);
       setIsTracking(true);
       if (origin) {
         setCurrentLocation(origin);
@@ -466,12 +468,14 @@ const SelectOriginDestination = () => {
   };
 
   const stopTracking = async () => {
-    if (!ongoingTrips || !ongoingTrips._id) {
+    const tripId = currentTripId || ongoingTrips?._id;
+
+    if (!tripId) {
       showMessage.fail('Không có chuyến đi nào đang diễn ra');
       return;
     }
     dispatch(setIsLoading(true));
-    const res: any = await TripApi.updateTrip(ongoingTrips._id, {
+    const res: any = await TripApi.updateTrip(tripId, {
       endedAt: new Date(),
       status: 'ended',
     });
@@ -1002,32 +1006,41 @@ const SelectOriginDestination = () => {
                   justifyContent: 'center',
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                <IconLibrary
-                  library="MaterialCommunityIcons"
-                  name={vehicleFuelType === 'electric' ? 'car-electric' : 'car'}
-                  size={22}
-                  color={vehicleFuelType === 'electric' ? color.MAIN : '#888'}
-                  style={{ marginRight: 6 }}
-                />
-                <Text
+                <View
                   style={{
-                    color: vehicleFuelType === 'electric' ? color.MAIN : '#333',
-                    marginRight: 8,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginBottom: 4,
                   }}
                 >
-                  {vehicleFuelType === 'electric' ? 'Điện' : 'Xăng'}
-                </Text>
-                <Switch
-                  value={vehicleFuelType === 'electric'}
-                  onValueChange={val =>
-                    setVehicleFuelType(val ? 'electric' : 'gasoline')
-                  }
-                  thumbColor={
-                    vehicleFuelType === 'electric' ? color.MAIN : '#ccc'
-                  }
-                  trackColor={{ false: '#ccc', true: color.MAIN }}
-                />
+                  <IconLibrary
+                    library="MaterialCommunityIcons"
+                    name={
+                      vehicleFuelType === 'electric' ? 'car-electric' : 'car'
+                    }
+                    size={22}
+                    color={vehicleFuelType === 'electric' ? color.MAIN : '#888'}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text
+                    style={{
+                      color:
+                        vehicleFuelType === 'electric' ? color.MAIN : '#333',
+                      marginRight: 8,
+                    }}
+                  >
+                    {vehicleFuelType === 'electric' ? 'Điện' : 'Xăng'}
+                  </Text>
+                  <Switch
+                    value={vehicleFuelType === 'electric'}
+                    onValueChange={val =>
+                      setVehicleFuelType(val ? 'electric' : 'gasoline')
+                    }
+                    thumbColor={
+                      vehicleFuelType === 'electric' ? color.MAIN : '#ccc'
+                    }
+                    trackColor={{ false: '#ccc', true: color.MAIN }}
+                  />
                 </View>
               </View>
             )}
