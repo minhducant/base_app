@@ -13,6 +13,7 @@ import { IconHome, IconMap, IconUser } from '@assets/icons';
 import GoalScreen from '@screens/user/Goal';
 import ReportScreen from '@screens/user/Report';
 import JournalScreen from '@screens/user/Journal';
+import ProfileScreen from '@screens/user/Profile';
 import CreateJournalScreen from '@screens/user/CreateJournal';
 import ChangeLanguageScreen from '@screens/user/ChangeLanguage';
 import SelectLocationScreen from '@screens/home/SelectLocation';
@@ -26,6 +27,7 @@ const screenOptions = { headerShown: false };
 function NoFooter() {
   const screens: any = [
     GoalScreen,
+    ProfileScreen,
     ReportScreen,
     JournalScreen,
     CreateJournalScreen,

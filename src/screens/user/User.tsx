@@ -49,12 +49,31 @@ export default function UserScreen({ navigation }: any) {
           showsVerticalScrollIndicator={false}
           style={userStyle.scrollViewContent}
         >
-          <TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() =>
+              navigation.navigate('NoFooter', {
+                screen: 'ProfileScreen',
+              })
+            }
+          >
             <FastImage
               style={userStyle.fastImage}
-              source={require('@assets/images/avatar.png')}
+              source={
+                user?.image_url
+                  ? { uri: user.image_url, priority: FastImage.priority.normal }
+                  : require('@assets/images/avatar.png')
+              }
               resizeMode={FastImage.resizeMode.cover}
             />
+            <View style={userStyle.viewEditIcon}>
+              <IconLibrary
+                library="MaterialIcons"
+                name="edit"
+                size={16}
+                color="#fff"
+              />
+            </View>
           </TouchableOpacity>
           <Text style={userStyle.txtName}>{user?.name}</Text>
           <Text style={userStyle.titleFunction}>{t('trip')}</Text>

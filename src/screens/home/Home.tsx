@@ -1,18 +1,18 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import FastImage from 'react-native-fast-image';
-import { useDispatch, useSelector } from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
   Image,
+  Alert,
   Animated,
   ScrollView,
   RefreshControl,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 
 import {
@@ -23,14 +23,17 @@ import {
   SurveyVector,
   QuestionVector,
 } from '@assets/icons';
-import TripModal from '@components/TripModal';
+import { useGoal } from '@hooks/useGoal';
 import { useWeather } from '@hooks/useWeather';
 import { homeStyle } from '@styles/home.style';
-import ProgressBar from '@components/home/progressBar'
+import TripModal from '@components/modal/TripModal';
+import ProgressBar from '@components/home/progressBar';
+import EcoMoveModal from '@components/modal/EcoMoveModal';
 import { useLocationPermission } from '@utils/permissions';
 
 export default function HomeScreen({ navigation }: any) {
   const { t } = useTranslation();
+  const { goalList, reload: loadGoal } = useGoal();
   const refreshControl = useRef<boolean>(false);
   const scrollY = useRef(new Animated.Value(0)).current;
   const { location } = useLocationPermission();
@@ -39,24 +42,19 @@ export default function HomeScreen({ navigation }: any) {
     location?.latitude,
     location?.longitude,
   );
-
+  const [showTipModal, setShowTipModal] = useState(false);
   const [showTripModal, setShowTripModal] = useState(false);
 
   const onRefresh = () => {
     refreshControl.current = true;
-    loadWeather()
-      .then(() => {
-        refreshControl.current = false;
-      })
-      .catch(() => {
-        refreshControl.current = false;
-      });
+    loadWeather();
+    loadGoal();
+    refreshControl.current = false;
   };
 
   const calculateTripEmission = (tripData: any) => {
     // Công thức tính toán đơn giản - bạn có thể tùy chỉnh theo yêu cầu
     const estimatedDistance = Math.floor(Math.random() * 100) + 10; // km (mock data)
-
     let co2PerKm = 0;
     if (tripData.vehicle === 'car') {
       co2PerKm = tripData.fuelType === 'electric' ? 0.05 : 0.12; // kg CO2/km
@@ -69,9 +67,7 @@ export default function HomeScreen({ navigation }: any) {
     } else if (tripData.vehicle === 'motorbike') {
       co2PerKm = tripData.fuelType === 'electric' ? 0.02 : 0.09;
     }
-
     const totalCO2 = (estimatedDistance * co2PerKm).toFixed(2);
-
     Alert.alert(
       'Kết quả tính toán',
       `Khoảng cách ước tính: ${estimatedDistance} km\nLượng CO2 phát thải: ${totalCO2} kg\n\nTừ: ${tripData.startPoint}\nĐến: ${tripData.endPoint}\nPhương tiện: ${tripData.vehicle}\nNhiên liệu: ${tripData.fuelType}`,
@@ -161,7 +157,10 @@ export default function HomeScreen({ navigation }: any) {
               </View>
               <Text style={homeStyle.txtActionItem}>{t('game')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={homeStyle.actionItem}>
+            <TouchableOpacity
+              style={homeStyle.actionItem}
+              onPress={() => setShowTipModal(true)}
+            >
               <View style={homeStyle.iconActionItem}>
                 <IconBook />
               </View>
@@ -177,9 +176,19 @@ export default function HomeScreen({ navigation }: any) {
             </TouchableOpacity>
           </View>
           <View style={homeStyle.progressCard}>
-            <Text style={homeStyle.titleProgressCard}>{t('progress')}</Text>
-            <Text style={homeStyle.valueProgressCard}>144 g CO₂ 🌱</Text>
-            <ProgressBar current={35} max={100} />
+            <Text style={homeStyle.titleProgressCard}>
+              {goalList?.achieved_co2 > goalList?.target_co2
+                ? t('exceeded_monthly_goal')
+                : `${t('monthly_emission_progress')} ${goalList?.month}`}
+            </Text>
+            <Text style={homeStyle.valueProgressCard}>
+              {goalList?.achieved_co2 || 0}g / {goalList?.target_co2 || 0}g CO₂
+              🌱
+            </Text>
+            <ProgressBar
+              max={goalList?.target_co2}
+              current={goalList?.achieved_co2}
+            />
           </View>
           <View style={homeStyle.surveyCard}>
             <SurveyVector />
@@ -215,6 +224,10 @@ export default function HomeScreen({ navigation }: any) {
           visible={showTripModal}
           onClose={() => setShowTripModal(false)}
           onSubmit={handleTripSubmit}
+        />
+        <EcoMoveModal
+          visible={showTipModal}
+          onClose={() => setShowTipModal(false)}
         />
       </SafeAreaView>
     </LinearGradient>

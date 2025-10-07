@@ -201,6 +201,7 @@ export const homeStyle: any = {
     color: color.BLACK,
     fontWeight: '700',
     marginBottom: normalize(8),
+    textAlign: "center"
   },
   valueProgressCard: {
     fontSize: 18,

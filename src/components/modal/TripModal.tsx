@@ -1,16 +1,25 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   Text,
   Modal,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
   Alert,
   FlatList,
   ViewStyle,
+  TextInput,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
 } from 'react-native';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import normalize from 'react-native-normalize';
+
+import { TripApi } from '@api/trip';
+import color from '@styles/color';
+import themeStyle from '@styles/theme.style';
+import { setIsLoading } from '@stores/action';
+import { showMessage, calculateVehicleCO } from '@utils/index';
 
 interface TripModalProps {
   visible: boolean;
@@ -33,10 +42,11 @@ const TripModal: React.FC<TripModalProps> = ({
   const GOONG_API_KEY = 'gwDzlAb8g0zJCMbZOpIZcZZC2c7jQcpmHqNYEqXu';
   const GOONG_API_KEY1 = '2yGbwvmxDzSnhqqU2nWLJdnY4LlozlWcLdg7GVtF';
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const [startPoint, setStartPoint] = useState('');
   const [endPoint, setEndPoint] = useState('');
-  const [selectedVehicle, setSelectedVehicle] = useState('');
-  const [selectedFuelType, setSelectedFuelType] = useState('');
+  const [selectedVehicle, setSelectedVehicle] = useState('bike');
+  const [selectedFuelType, setSelectedFuelType] = useState('gasoline');
   const [destinationQuery, setDestinationQuery] = useState('');
   const [destinationSuggestions, setDestinationSuggestions] = useState<any[]>(
     [],
@@ -56,19 +66,27 @@ const TripModal: React.FC<TripModalProps> = ({
     [number, number] | null
   >(null);
   const [originQuery, setOriginQuery] = useState('');
+  const [co2Emitted, setCo2Emitted] = useState(0);
+  const [distance, setDistance] = useState(0);
+  const [distanceText, setDistanceText] = useState('');
 
   const vehicles = [
-    { id: 'car', name: 'Ô tô', icon: '🚗' },
-    { id: 'plane', name: 'Máy bay', icon: '✈️' },
-    { id: 'train', name: 'Tàu hoả', icon: '🚆' },
-    { id: 'bus', name: 'Xe buýt', icon: '🚌' },
-    { id: 'motorbike', name: 'Xe máy', icon: '🏍️' },
+    { key: 'bike', label: t('bike') },
+    { key: 'car', label: t('car') },
+    { key: 'truck', label: t('truck') },
+    { key: 'bus', label: t('bus') },
   ];
 
   const fuelTypes = [
     { id: 'gasoline', name: 'Xăng', icon: '⛽' },
     { id: 'electric', name: 'Điện', icon: '🔋' },
   ];
+
+  useEffect(() => {
+    if (origin && destination) {
+      fetchRoute(selectedVehicle);
+    }
+  }, [origin, destination]);
 
   const fetchDestinationSuggestions = async (text: string) => {
     setDestinationQuery(text);
@@ -104,22 +122,39 @@ const TripModal: React.FC<TripModalProps> = ({
       console.error('Autocomplete error:', err);
     }
   };
-  const handleSubmit = () => {
-    if (!startPoint || !endPoint || !selectedVehicle || !selectedFuelType) {
-      Alert.alert('Thông báo', 'Vui lòng điền đầy đủ thông tin');
+  const handleSubmit = async () => {
+    const params = {
+      origin,
+      destination,
+      distance,
+      origin_text: originText,
+      destination_text: destinationText,
+      vehicle: selectedVehicle,
+      co2_estimated: co2Emitted,
+      status: 'ended',
+    };
+    if (
+      !params.origin ||
+      !params.destination ||
+      !params.distance ||
+      !params.co2_estimated
+    ) {
+      showMessage.warning(t('missing_fields'));
       return;
     }
-
-    const tripData: TripData = {
-      startPoint,
-      endPoint,
-      vehicle: selectedVehicle,
-      fuelType: selectedFuelType,
-    };
-
-    onSubmit(tripData);
-    resetForm();
-    onClose();
+    try {
+      dispatch(setIsLoading(true));
+      const res = await TripApi.createTrip(params);
+      if (!res?.client_id) {
+        showMessage.fail(t('cannot_create_trip'));
+        return;
+      }
+      handleClose();
+    } catch (err) {
+      showMessage.fail(t('error_occurred'));
+    } finally {
+      dispatch(setIsLoading(false));
+    }
   };
 
   const handleSelectSuggestion = async (
@@ -160,8 +195,8 @@ const TripModal: React.FC<TripModalProps> = ({
   const resetForm = () => {
     setStartPoint('');
     setEndPoint('');
-    setSelectedVehicle('');
-    setSelectedFuelType('');
+    setSelectedVehicle('bike');
+    setSelectedFuelType('gasoline');
     setOriginText('');
     setDestinationText('');
     setOriginQuery('');
@@ -170,6 +205,32 @@ const TripModal: React.FC<TripModalProps> = ({
     setDestination(null);
     setRouteCoords([]);
     setCurrentLocation(null);
+    setDistance(0);
+    setDistanceText('');
+    setCo2Emitted(0);
+  };
+
+  const fetchRoute = async (vehicle: any) => {
+    if (!origin || !destination) return;
+    try {
+      dispatch(setIsLoading(true));
+      const res = await fetch(
+        `https://rsapi.goong.io/Direction?origin=${origin[1]},${origin[0]}&destination=${destination[1]},${destination[0]}&vehicle=${vehicle}&api_key=${GOONG_API_KEY}`,
+      );
+      const data = await res.json();
+      if (data?.routes?.length > 0) {
+        const route = data.routes[0];
+        setDistance(route.legs[0].distance.value);
+        setDistanceText(route.legs[0].distance.text);
+        const distanceKm = route.legs[0].distance.value / 1000;
+        const estimates = calculateVehicleCO(vehicle, distanceKm);
+        setCo2Emitted(estimates);
+      } else {
+      }
+    } catch (err) {
+    } finally {
+      dispatch(setIsLoading(false));
+    }
   };
 
   const handleClose = () => {
@@ -219,7 +280,7 @@ const TripModal: React.FC<TripModalProps> = ({
                 data={destinationSuggestions}
                 style={{
                   position: 'absolute',
-                  top: normalize(250),
+                  top: normalize(210),
                   left: 10,
                   right: 10,
                   zIndex: 1,
@@ -248,7 +309,7 @@ const TripModal: React.FC<TripModalProps> = ({
                 data={originSuggestions}
                 style={{
                   position: 'absolute',
-                  top: normalize(120),
+                  top: normalize(125),
                   left: 10,
                   right: 10,
                   zIndex: 1,
@@ -278,15 +339,17 @@ const TripModal: React.FC<TripModalProps> = ({
             <View style={styles.optionContainer}>
               {vehicles.map(vehicle => (
                 <TouchableOpacity
-                  key={vehicle.id}
+                  key={vehicle.key}
                   style={[
                     styles.optionItem,
-                    selectedVehicle === vehicle.id && styles.selectedOption,
+                    selectedVehicle === vehicle.key && styles.selectedOption,
                   ]}
-                  onPress={() => setSelectedVehicle(vehicle.id)}
+                  onPress={() => {
+                    setSelectedVehicle(vehicle.key as any);
+                    fetchRoute(vehicle.key as any);
+                  }}
                 >
-                  <Text style={styles.optionIcon}>{vehicle.icon}</Text>
-                  <Text style={styles.optionText}>{vehicle.name}</Text>
+                  <Text style={styles.optionText}>{t(vehicle.key)}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -308,7 +371,20 @@ const TripModal: React.FC<TripModalProps> = ({
                 </TouchableOpacity>
               ))}
             </View>
-
+            <View style={styles.infoRow}>
+              <View style={styles.infoTrip}>
+                <Text style={styles.labelJournal}>{t('distance')}</Text>
+                <Text style={styles.textValueJournal}>
+                  {distanceText && distanceText}
+                </Text>
+              </View>
+              <View style={styles.infoTrip}>
+                <Text style={styles.labelJournal}>{t('co2_estimate')}</Text>
+                <Text style={styles.textValueJournal}>
+                  {co2Emitted ? `${Number(co2Emitted).toFixed(2)} g` : ''}
+                </Text>
+              </View>
+            </View>
             {/* Buttons */}
             <View style={styles.buttonContainer}>
               <TouchableOpacity
@@ -331,11 +407,6 @@ const TripModal: React.FC<TripModalProps> = ({
   );
 };
 
-import { StyleSheet } from 'react-native';
-import normalize from 'react-native-normalize';
-import themeStyle from '@styles/theme.style';
-import color from '@styles/color';
-
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -351,11 +422,12 @@ const styles = StyleSheet.create({
     maxHeight: '80%',
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold' as const,
     textAlign: 'center' as const,
-    marginBottom: 20,
+    marginBottom: 8,
     color: '#333',
+    fontFamily: themeStyle.FONT_BOLD,
   },
   label: {
     fontSize: 16,
@@ -363,14 +435,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 16,
     color: '#333',
+    fontFamily: themeStyle.FONT_BOLD,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius:  normalize(12),
+    padding: normalize(10),
     fontSize: 16,
     backgroundColor: '#f9f9f9',
+    fontFamily: themeStyle.FONT_FAMILY,
   },
   optionContainer: {
     flexDirection: 'row' as const,
@@ -380,7 +454,7 @@ const styles = StyleSheet.create({
   optionItem: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    padding: 12,
+    padding: normalize(10),
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
@@ -398,6 +472,7 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 14,
     color: '#333',
+    fontFamily: themeStyle.FONT_FAMILY,
   },
   buttonContainer: {
     flexDirection: 'row' as const,
@@ -416,6 +491,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     fontWeight: '600' as const,
+    fontFamily: themeStyle.FONT_FAMILY,
   },
   submitButton: {
     flex: 1,
@@ -428,6 +504,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontWeight: '600' as const,
+    fontFamily: themeStyle.FONT_FAMILY,
   },
   suggestionItem: {
     padding: 10,
@@ -441,6 +518,48 @@ const styles = StyleSheet.create({
     fontFamily: themeStyle.FONT_FAMILY,
     color: color.BLACK,
   } as ViewStyle,
+  txtJournalTitle: {
+    fontSize: 14,
+    fontFamily: themeStyle.FONT_FAMILY,
+    color: color.BLACK,
+    marginLeft: normalize(8),
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: normalize(8),
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: normalize(6),
+  },
+  infoValue: {
+    fontSize: 13,
+    fontFamily: themeStyle.FONT_BOLD,
+  },
+  infoLabel: {
+    fontSize: 11,
+    fontFamily: themeStyle.FONT_FAMILY,
+    color: color.DUSTY_GRAY,
+  },
+  infoTrip: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  labelJournal: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: normalize(16),
+    fontFamily: themeStyle.FONT_FAMILY,
+  },
+  textValueJournal: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: color.MAIN,
+    fontFamily: themeStyle.FONT_BOLD,
+    marginTop: normalize(16),
+  },
 });
 
 export default TripModal;

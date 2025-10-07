@@ -7,17 +7,18 @@ import { TripApi } from '@api/trip';
 import { showMessage } from '@utils/index';
 import { setIsLoading } from '@stores/action';
 
-export const useGoal = (month: Date) => {
+export const useGoal = (month?: Date) => {
   const dispatch = useDispatch();
   const [goalList, setGoalList] = useState<any>({});
-  const formattedMonth = `${String(month.getMonth() + 1).padStart(
+  const currentMonth = month || new Date();
+  const formattedMonth = `${String(currentMonth.getMonth() + 1).padStart(
     2,
     '0',
-  )}/${month.getFullYear()}`;
+  )}/${currentMonth.getFullYear()}`;
 
   const fetchGoals = useCallback(async () => {
     try {
-      dispatch(setIsLoading(true));
+      // dispatch(setIsLoading(true));
       const res = await TripApi.getGoal({ month: formattedMonth });
       if (res?.data) {
         setGoalList(res.data);

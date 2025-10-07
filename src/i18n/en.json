@@ -147,5 +147,16 @@
   "add_emission_reduction_goal": "Add emission reduction goal",
   "enter_target_co2": "Enter target CO₂",
   "emission_reduction_goal": "Emission reduction goal",
-  "progress": "Progress"
+  "progress": "Progress",
+  "monthly_emission_progress": "Monthly emission reduction progress: ",
+  "exceeded_monthly_goal": "You have exceeded the emission target for this month!",
+  "eco_driving_tips_title": "Eco-driving Tips",
+  "eco_driving_tips_description": "Helps save fuel, reduce emissions, and extend vehicle life:\n- Maintain a steady speed: avoid sudden acceleration or braking.\n- Start gently: do not press the accelerator hard immediately after starting the engine.\n- Turn off the engine when idling for long periods: turning off after more than 1 minute saves fuel.\n- Use appropriate gears (manual cars): shift at the correct RPM (usually 2,000–2,500 rpm).\n- Keep a safe distance: avoid frequent hard braking.\n- Maintain proper tire pressure: under-inflated tires increase fuel consumption by 3–5%.\n- Reduce unnecessary load: remove excess items, detach roof racks when not in use.\n- Regular maintenance: air filters, spark plugs, and engine oil directly affect fuel consumption.",
+  "understood": "Understood",
+  "update_account": "Update account",
+  "organization": "Organization",
+  "select": "Select",
+  "search": "Search",
+  "EMAIL_ALREADY_EXIST": "Email already exists",
+  "PHONE_ALREADY_EXIST": "Phone number already exists"
 }

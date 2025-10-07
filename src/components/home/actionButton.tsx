@@ -10,7 +10,10 @@ export const ActionButton = ({ title, onPress, disable = false }: any) => {
     <TouchableOpacity
       disabled={disable}
       onPress={onPress}
-      style={styles.button}
+      style={[
+        styles.button,
+        disable ? styles.buttonDisabled : styles.buttonActive,
+      ]}
       activeOpacity={0.8}
     >
       <Text style={styles.txt}>{title}</Text>
@@ -20,16 +23,22 @@ export const ActionButton = ({ title, onPress, disable = false }: any) => {
 
 const styles = StyleSheet.create({
   txt: {
-    fontSize: 16,
+    fontSize: 14,
     color: color.WHITE,
     textAlign: 'center',
     fontFamily: themeStyle.FONT_BOLD,
   },
   button: {
     marginTop: normalize(16),
-    backgroundColor: color.MAIN,
     paddingVertical: normalize(10),
     borderRadius: normalize(8),
     marginHorizontal: normalize(20),
+  },
+  buttonActive: {
+    backgroundColor: color.MAIN,
+  },
+  buttonDisabled: {
+    backgroundColor: '#B0B0B0',
+    opacity: 0.6,
   },
 });

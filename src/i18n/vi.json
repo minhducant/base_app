@@ -147,5 +147,16 @@
   "add_emission_reduction_goal": "Thêm mục tiêu giảm phát thải",
   "enter_target_co2": "Nhập mục tiêu CO₂",
   "emission_reduction_goal": "Mục tiêu giảm phát thải",
-  "progress": "Tiến độ giảm phát thải"
+  "progress": "Tiến độ giảm phát thải",
+  "monthly_emission_progress": "Tiến độ giảm phát thải tháng: ",
+  "exceeded_monthly_goal": "Bạn đã vượt mức phát thải so với mục tiêu tháng này!",
+  "eco_driving_tips_title": "Mẹo lái xe sinh thái (Eco-driving)",
+  "eco_driving_tips_description": "Giúp tiết kiệm nhiên liệu, giảm phát thải, tăng tuổi thọ xe:\n- Giữ tốc độ ổn định: hạn chế tăng/giảm ga đột ngột.\n- Khởi động nhẹ nhàng: không đạp ga mạnh khi vừa nổ máy.\n- Tắt máy khi dừng lâu: trên 1 phút thì tắt máy sẽ tiết kiệm xăng.\n- Dùng số hợp lý (xe số sàn): sang số đúng vòng tua (thường 2.000–2.500 vòng/phút).\n- Giữ khoảng cách an toàn: tránh phanh gấp liên tục.\n- Áp suất lốp chuẩn: lốp non hơi làm xe hao nhiên liệu 3–5%.\n- Giảm tải trọng không cần thiết: bỏ đồ dư thừa, tháo baga khi không dùng.\n- Bảo dưỡng định kỳ: lọc gió, bugi, dầu nhớt ảnh hưởng trực tiếp đến mức tiêu thụ nhiên liệu.",
+  "understood": "Đã hiểu",
+  "update_account": "Cập nhật tài khoản",
+  "organization": "Tổ chức",
+  "select": "Chọn",
+  "search": "Tìm kiếm",
+  "EMAIL_ALREADY_EXIST": "Email đã tồn tại",
+  "PHONE_ALREADY_EXIST": "Số điện thoại đã tồn tại"
 }

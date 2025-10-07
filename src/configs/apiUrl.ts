@@ -1,12 +1,13 @@
 export const API_PREFIX = '/api/v1';
-export const MAIN_DOMAIN = 'http://172.104.189.80:3003';
-// export const MAIN_DOMAIN = 'http://192.168.1.78:3003';
+// export const MAIN_DOMAIN = 'http://172.104.189.80:3003';
+export const MAIN_DOMAIN = 'http://192.168.1.78:3003';
 
 export const ApiUrl = {
   auth: {
     delete_account: '/client',
     sign_up: '/client/sign-up',
     login: '/auth/client/login',
+    update_user_info: '/client',
     verify_account: '/client/verify-account',
     get_user_info: '/auth/client/current',
     login_google: '/auth/client/google/login',
