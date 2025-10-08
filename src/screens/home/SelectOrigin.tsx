@@ -38,6 +38,8 @@ const SelectOriginDestination = () => {
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const alertShownRef = useRef(false);
+  const [currentTripId, setCurrentTripId] = useState<string | null>(null);
+  const autoStopRef = useRef(false); // Thêm ref để tránh auto-stop multiple times
 
   // them xe
   const [vehicleFuelType, setVehicleFuelType] = useState<
@@ -150,6 +152,9 @@ const SelectOriginDestination = () => {
     setDestinationSuggestions([]);
     setSelecting(null);
     setIsTracking(false);
+    setCurrentTripId(null); // Thêm reset currentTripId
+    setShowSummaryModal(false); // Thêm reset showSummaryModal
+    autoStopRef.current = false; // Reset auto-stop flag
     // setCurrentLocation(null);
   };
 
@@ -171,7 +176,6 @@ const SelectOriginDestination = () => {
       });
     }
   }, [isTracking, currentLocation, origin]);
-  // ...existing code...
 
   useEffect(() => {
     if (ongoingTrips && Object.keys(ongoingTrips).length > 0) {
@@ -191,41 +195,48 @@ const SelectOriginDestination = () => {
         setStartTime(new Date(ongoingTrips.startTime));
         setTotalDistance(ongoingTrips.distance || 0);
         setCo2Emitted(ongoingTrips.co2 || 0);
+        setCurrentTripId(ongoingTrips._id || ongoingTrips.client_id);
       }
     }
   }, [ongoingTrips]);
 
   useEffect(() => {
     // Listener khi có location mới
-    // Lưu vị trí trước đó để tính quãng đường thực tế khi tracking
     const prevLocationRef = { current: null as [number, number] | null };
+    
     const onLocation = BackgroundGeolocation.onLocation(location => {
       const coords: [number, number] = [
         location.coords.longitude,
         location.coords.latitude,
       ];
       setCurrentLocation(coords);
-      if (isTracking) {
+      
+      // Chỉ xử lý khi đang tracking và chưa auto-stop
+      if (isTracking && !autoStopRef.current) {
         // Tính quãng đường thực tế đã đi
         let added = 0;
         if (prevLocationRef.current) {
           added = calculateDistance(prevLocationRef.current, coords);
         }
         prevLocationRef.current = coords;
+        
         // Cộng dồn quãng đường
         setTotalDistance(prev => {
           const newTotal = prev + added;
-          // Tính CO2
+          
+          // Tính CO2 với fuel type
           const factor: Record<string, number> = {
-            car: 120,
-            motorcycle: 50,
-            bus: 30,
-            truck: 150,
+            car: vehicleFuelType === 'electric' ? 0 : 120,
+            motorcycle: vehicleFuelType === 'electric' ? 0 : 50,
+            bus: vehicleFuelType === 'electric' ? 0 : 30,
+            bike: vehicleFuelType === 'electric' ? 0 : 10,
           };
+          
           const co2 = newTotal * factor[selectedVehicle];
           setCo2Emitted(co2);
           setCo2Estimates(co2);
           setDistanceText(`${newTotal.toFixed(2)} km`);
+          
           // Duration thực tế
           if (startTime) {
             const now = new Date();
@@ -242,8 +253,9 @@ const SelectOriginDestination = () => {
               )} phút`;
             setDurationText(durationStr);
           }
-          // Kiểm tra đến đích
-          if (destination) {
+          
+          // Kiểm tra đến đích (chỉ khi tracking và chưa auto-stop)
+          if (destination && !autoStopRef.current) {
             const toRad = (value: number) => (value * Math.PI) / 180;
             const R = 6371; // km
             const dLat = toRad(destination[1] - coords[1]);
@@ -258,38 +270,47 @@ const SelectOriginDestination = () => {
                 Math.cos(lat2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             const dist = R * c * 1000; // mét
-            if (dist < 100) {
-              setIsTracking(false);
-              stopTracking();
-              setShowSummaryModal(true);
-              return newTotal;
+            
+            console.log('Distance to destination:', dist, 'meters');
+            
+            if (dist < 50) { // 50m radius
+              console.log('Auto-stopping trip...');
+              autoStopRef.current = true; // Set flag ngay lập tức
+              
+              // Gọi hàm auto-stop riêng biệt
+              handleAutoStop(newTotal, co2);
             }
           }
+          
           return newTotal;
         });
-      } else if (origin && destination && routeCoords.length > 1) {
-        // Khi KHÔNG tracking: cập nhật distance, duration, co2_estimate dựa trên routeCoords (tuyến đường đã chọn)
+      } else if (origin && destination && routeCoords.length > 1 && !isTracking) {
+        // Logic cho khi KHÔNG tracking (estimate route)
         let total = 0;
         for (let i = 1; i < routeCoords.length; i++) {
           total += calculateDistance(routeCoords[i - 1], routeCoords[i]);
         }
         setTotalDistance(total);
         setDistanceText(`${total.toFixed(2)} km`);
-        // Tính CO2
+        
+        // Tính CO2 với fuel type
         const factor: Record<string, number> = {
-          car: 120,
-          motorcycle: 50,
-          bus: 30,
-          truck: 150,
+          car: vehicleFuelType === 'electric' ? 0 : 120,
+          motorcycle: vehicleFuelType === 'electric' ? 0 : 50,
+          bus: vehicleFuelType === 'electric' ? 0 : 30,
+          bike: vehicleFuelType === 'electric' ? 0 : 10,
         };
+        
         const co2 = total * factor[selectedVehicle];
         setCo2Emitted(co2);
         setCo2Estimates(co2);
+        
         // Duration: giả lập 30km/h
         const duration = (total / 30) * 60; // phút
         setDurationText(`${Math.round(duration)} phút`);
       }
     });
+
     // Config
     BackgroundGeolocation.ready(
       {
@@ -308,11 +329,58 @@ const SelectOriginDestination = () => {
         }
       },
     );
+
     return () => {
       onLocation.remove();
       BackgroundGeolocation.removeAllListeners();
     };
-  }, [routeCoords, selectedVehicle, startTime, ongoingTrips]);
+  }, [
+    isTracking, 
+    routeCoords, 
+    selectedVehicle, 
+    vehicleFuelType, // Thêm dependency
+    startTime, 
+    destination, // Thêm dependency
+    origin // Thêm dependency
+  ]);
+
+  // Hàm xử lý auto-stop riêng biệt
+  const handleAutoStop = async (finalDistance: number, finalCO2: number) => {
+    try {
+      console.log('Auto-stopping with distance:', finalDistance, 'CO2:', finalCO2);
+      
+      // Dừng tracking ngay lập tức
+      setIsTracking(false);
+      BackgroundGeolocation.stop();
+      Geolocation.stopObserving();
+      
+      // Gọi API update trip
+      const tripId = currentTripId || ongoingTrips?._id;
+      if (tripId) {
+        const res: any = await TripApi.updateTrip(tripId, {
+          endedAt: new Date(),
+          status: 'ended',
+          distance: finalDistance,
+          co2: finalCO2,
+        });
+        
+        if (res?.code === 200) {
+          showMessage.success('Đã đến đích! Kết thúc chuyến đi.');
+        } else {
+          showMessage.fail('Lỗi khi tự động kết thúc chuyến đi');
+        }
+      }
+      
+      // Hiển thị modal
+      setTimeout(() => {
+        setShowSummaryModal(true);
+      }, 500);
+      
+    } catch (error) {
+      console.error('Auto-stop error:', error);
+      showMessage.fail('Lỗi khi tự động kết thúc chuyến đi');
+    }
+  };
 
   useEffect(() => {
     if (
@@ -388,7 +456,7 @@ const SelectOriginDestination = () => {
     if (origin && destination) {
       fetchRoute(selectedVehicle);
     }
-  }, [origin, destination]);
+  }, [origin, destination, selectedVehicle, vehicleFuelType]); // Thêm vehicleFuelType dependency
 
   // Add useEffect to follow user when tracking
   // Chỉ follow user khi đang tracking và user đã di chuyển khỏi origin
@@ -412,25 +480,15 @@ const SelectOriginDestination = () => {
     return dist > 1;
   };
 
-  useEffect(() => {
-    if (
-      isTracking &&
-      currentLocation &&
-      cameraRef.current &&
-      hasMovedFromOrigin(currentLocation, origin)
-    ) {
-      cameraRef.current.setCamera({
-        centerCoordinate: currentLocation,
-        animationDuration: 800,
-      });
-    }
-  }, [isTracking, currentLocation, origin]);
-
   const startTracking = async () => {
     if (!status || status !== 'granted') {
       openSettings();
       return;
     }
+    
+    // Reset auto-stop flag khi bắt đầu trip mới
+    autoStopRef.current = false;
+    
     try {
       dispatch(setIsLoading(true));
       const res = await TripApi.createTrip({
@@ -443,22 +501,28 @@ const SelectOriginDestination = () => {
         status: 'ongoing',
         coord: routeCoords,
       });
+      
       if (!res?.client_id) {
         showMessage.fail(t('cannot_create_trip'));
-        dispatch(setIsLoading(false));
         return;
       }
+      
+      setCurrentTripId(res._id || res.client_id);
       setIsTracking(true);
+      
       if (origin) {
         setCurrentLocation(origin);
       }
+      
       setStartTime(new Date());
       setCo2Estimates(0);
       setDurationText('0');
       setTotalDistance(0);
       setDistanceText('0');
+      
       BackgroundGeolocation.start();
     } catch (err) {
+      console.error('Start tracking error:', err);
       showMessage.fail(t('error_occurred'));
     } finally {
       dispatch(setIsLoading(false));
@@ -466,26 +530,46 @@ const SelectOriginDestination = () => {
   };
 
   const stopTracking = async () => {
-    if (!ongoingTrips || !ongoingTrips._id) {
+    // Kiểm tra nếu đã auto-stop thì không làm gì
+    if (autoStopRef.current) {
+      console.log('Trip already auto-stopped');
+      return;
+    }
+    
+    const tripId = currentTripId || ongoingTrips?._id;
+
+    if (!tripId) {
       showMessage.fail('Không có chuyến đi nào đang diễn ra');
       return;
     }
-    dispatch(setIsLoading(true));
-    const res: any = await TripApi.updateTrip(ongoingTrips._id, {
-      endedAt: new Date(),
-      status: 'ended',
-    });
-    if (res?.code === 200) {
-      showMessage.success('Kết thúc chuyến đi thành công');
+    
+    try {
+      dispatch(setIsLoading(true));
+      
+      // Dừng tracking ngay lập tức
       setIsTracking(false);
-      setShowSummaryModal(true);
-      Geolocation.stopObserving();
       BackgroundGeolocation.stop();
-    } else {
-      showMessage.fail('Kết thúc chuyến đi thất bại');
+      Geolocation.stopObserving();
+      
+      const res: any = await TripApi.updateTrip(tripId, {
+        endedAt: new Date(),
+        status: 'ended',
+        distance: totalDistance,
+        co2: co2Emitted,
+      });
+      
+      if (res?.code === 200) {
+        showMessage.success('Kết thúc chuyến đi thành công');
+        setShowSummaryModal(true);
+      } else {
+        showMessage.fail('Kết thúc chuyến đi thất bại');
+      }
+    } catch (error) {
+      console.error('Stop tracking error:', error);
+      showMessage.fail('Lỗi khi kết thúc chuyến đi');
+    } finally {
+      dispatch(setIsLoading(false));
     }
-    dispatch(setIsLoading(false));
-    resetAllState();
   };
 
   const calculateDistance = (
@@ -506,11 +590,11 @@ const SelectOriginDestination = () => {
   };
 
   const handleEndTrip = () => {
-    // setDistanceText('');
-    // setDurationText('');
-    // setCo2Estimates(null);
-    // setOriginText('');
-    // setDestinationText('');
+    // Nếu đang tracking, stop trước
+    if (isTracking) {
+      BackgroundGeolocation.stop();
+      Geolocation.stopObserving();
+    }
     resetAllState();
   };
 
@@ -636,7 +720,6 @@ const SelectOriginDestination = () => {
       const data = await res.json();
       const address = data?.results?.[0]?.formatted_address ?? 'Không xác định';
       setOriginText(address);
-      // setSuggestions([]); // obsolete after refactor
       setSelecting(null);
     } catch (error) {
       showMessage.fail('Không thể lấy địa chỉ từ vị trí hiện tại');
@@ -703,9 +786,15 @@ const SelectOriginDestination = () => {
         if (!isTracking) {
           setDistanceText(route.legs[0].distance.text);
           setDurationText(route.legs[0].duration.text);
-          // Ước tính CO₂
+          // Ước tính CO₂ với fuel type
           const distanceKm = route.legs[0].distance.value / 1000;
-          const estimates = calculateVehicleCO(vehicle, distanceKm);
+          const factor: Record<string, number> = {
+            car: vehicleFuelType === 'electric' ? 0 : 120,
+            motorcycle: vehicleFuelType === 'electric' ? 0 : 50,
+            bus: vehicleFuelType === 'electric' ? 0 : 30,
+            bike: vehicleFuelType === 'electric' ? 0 : 10,
+          };
+          const estimates = distanceKm * factor[selectedVehicle];
           setCo2Estimates(estimates);
         }
       } else {
@@ -1002,32 +1091,42 @@ const SelectOriginDestination = () => {
                   justifyContent: 'center',
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                <IconLibrary
-                  library="MaterialCommunityIcons"
-                  name={vehicleFuelType === 'electric' ? 'car-electric' : 'car'}
-                  size={22}
-                  color={vehicleFuelType === 'electric' ? color.MAIN : '#888'}
-                  style={{ marginRight: 6 }}
-                />
-                <Text
+                <View
                   style={{
-                    color: vehicleFuelType === 'electric' ? color.MAIN : '#333',
-                    marginRight: 8,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginBottom: 4,
                   }}
                 >
-                  {vehicleFuelType === 'electric' ? 'Điện' : 'Xăng'}
-                </Text>
-                <Switch
-                  value={vehicleFuelType === 'electric'}
-                  onValueChange={val =>
-                    setVehicleFuelType(val ? 'electric' : 'gasoline')
-                  }
-                  thumbColor={
-                    vehicleFuelType === 'electric' ? color.MAIN : '#ccc'
-                  }
-                  trackColor={{ false: '#ccc', true: color.MAIN }}
-                />
+                  <IconLibrary
+                    library="MaterialCommunityIcons"
+                    name={
+                      vehicleFuelType === 'electric' ? 'car-electric' : 'car'
+                    }
+                    size={22}
+                    color={vehicleFuelType === 'electric' ? color.MAIN : '#888'}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text
+                    style={{
+                      color:
+                        vehicleFuelType === 'electric' ? color.MAIN : '#333',
+                      marginRight: 8,
+                    }}
+                  >
+                    {vehicleFuelType === 'electric' ? 'Điện' : 'Xăng'}
+                  </Text>
+                  <Switch
+                    value={vehicleFuelType === 'electric'}
+                    onValueChange={val =>
+                      setVehicleFuelType(val ? 'electric' : 'gasoline')
+                    }
+                    thumbColor={
+                      vehicleFuelType === 'electric' ? color.MAIN : '#ccc'
+                    }
+                    trackColor={{ false: '#ccc', true: color.MAIN }}
+                    disabled={isTracking} // Disable khi đang tracking
+                  />
                 </View>
               </View>
             )}
@@ -1073,13 +1172,16 @@ const SelectOriginDestination = () => {
                 library="MaterialCommunityIcons"
                 name="cloud-outline"
                 size={22}
-                color={color.CRIMSON}
+                color={co2Estimates === 0 ? color.MAIN : color.CRIMSON}
                 style={{ marginBottom: 4 }}
               />
               <Text
                 style={[
                   styles.text,
-                  { color: color.CRIMSON, fontWeight: 'bold' },
+                  { 
+                    color: co2Estimates === 0 ? color.MAIN : color.CRIMSON, 
+                    fontWeight: 'bold' 
+                  },
                 ]}
               >
                 {co2Estimates?.toFixed(2) || 0} g
@@ -1089,7 +1191,6 @@ const SelectOriginDestination = () => {
               </Text>
             </View>
           </View>
-          // ...existing code...
           {!isTracking ? (
             <View style={styles.bottomButton}>
               <TouchableOpacity
@@ -1115,7 +1216,7 @@ const SelectOriginDestination = () => {
                 style={styles.endButton}
                 onPress={() => stopTracking()}
               >
-                <Text style={styles.buttonText}>{t('end_journey')}</Text>
+                <Text style={styles.buttonText}>Kết thúc</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1160,7 +1261,10 @@ const SelectOriginDestination = () => {
                     paddingVertical: 8,
                     paddingHorizontal: 24,
                   }}
-                  onPress={() => setShowSummaryModal(false)}
+                  onPress={() => {
+                    setShowSummaryModal(false);
+                    handleEndTrip(); // Reset tất cả sau khi đóng modal
+                  }}
                 >
                   <Text
                     style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}

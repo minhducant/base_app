@@ -286,9 +286,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-base_app/Pods-base_app-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-base_app/Pods-base_app-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -303,9 +307,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-base_app/Pods-base_app-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-base_app/Pods-base_app-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -337,7 +345,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4VAX9QMXA6;
+				DEVELOPMENT_TEAM = 6WD5GYC85Z;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = base_app/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = EcoMove;
@@ -353,7 +361,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.ecomove.product;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ecomove.vna;
 				PRODUCT_NAME = EcoMove;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -372,7 +380,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4VAX9QMXA6;
+				DEVELOPMENT_TEAM = 6WD5GYC85Z;
 				INFOPLIST_FILE = base_app/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = EcoMove;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.shopping";
@@ -387,7 +395,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.ecomove.product;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ecomove.vna;
 				PRODUCT_NAME = EcoMove;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
