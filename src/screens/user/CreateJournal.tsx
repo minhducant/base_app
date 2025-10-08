@@ -17,7 +17,6 @@ import { userStyle } from '@styles/user.style';
 import { ActionButton } from '@components/home/actionButton';
 import { showMessage, calculateVehicleCO } from '@utils/index';
 import HeaderBackStatusBar from '@components/header/headerWithTitle';
-import { navigation } from '../../navigation/rootNavigation';
 
 const GOONG_API_KEY = 'gwDzlAb8g0zJCMbZOpIZcZZC2c7jQcpmHqNYEqXu';
 
@@ -30,7 +29,7 @@ const CreateJournalScreen = ({ navigation }: any) => {
   const [originText, setOriginText] = useState('');
   const [co2Emitted, setCo2Emitted] = useState(0);
   const [distance, setDistance] = useState(0);
-  const [distanceText, setDistanceText] = useState('0 km');
+  const [distanceText, setDistanceText] = useState('');
   const [destinationText, setDestinationText] = useState('');
   const [selectedVehicle, setSelectedVehicle] = useState('bike');
   const [destinationQuery, setDestinationQuery] = useState('');
@@ -274,12 +273,14 @@ const CreateJournalScreen = ({ navigation }: any) => {
         <View style={userStyle.infoRow}>
           <View style={userStyle.infoTrip}>
             <Text style={userStyle.labelJournal}>{t('distance')}</Text>
-            <Text style={userStyle.textValueJournal}>{distanceText}</Text>
+            <Text style={userStyle.textValueJournal}>
+              {distanceText && distanceText}
+            </Text>
           </View>
           <View style={userStyle.infoTrip}>
             <Text style={userStyle.labelJournal}>{t('co2_estimate')}</Text>
             <Text style={userStyle.textValueJournal}>
-              {co2Emitted.toFixed(2) || 0} g
+              {co2Emitted ? `${Number(co2Emitted).toFixed(2)} g` : ''}
             </Text>
           </View>
         </View>

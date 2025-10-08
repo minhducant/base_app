@@ -9,6 +9,7 @@ import { onLogout } from './logout';
 import { useAsyncApp } from './asyncApp';
 import { showMessage } from './toast';
 import { calculateVehicleCO } from './emissionCalculator';
+import { convertMetersToKm, convertSecondsToMinutes } from './convert';
 
 export {
   getAccessToken,
@@ -20,4 +21,6 @@ export {
   multiRemove,
   onLogout,
   calculateVehicleCO,
+  convertMetersToKm,
+  convertSecondsToMinutes,
 };

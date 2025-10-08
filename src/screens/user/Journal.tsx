@@ -14,6 +14,7 @@ import color from '@styles/color';
 import { useTrip } from '@hooks/useTrip';
 import { userStyle } from '@styles/user.style';
 import { IconLibrary } from '@components/base';
+import { convertMetersToKm } from '@utils/index';
 import HeaderBackStatusBar from '@components/header/headerWithTitle';
 
 const JournalScreen = ({ navigation }: any) => {
@@ -74,12 +75,7 @@ const JournalScreen = ({ navigation }: any) => {
             <View>
               <Text style={userStyle.infoLabel}>{t('distance')}</Text>
               <Text style={[userStyle.infoValue, { color: color.MAIN }]}>
-                {item?.distance != null
-                  ? item.distance % 1 === 0
-                    ? item.distance
-                    : item.distance.toFixed(2)
-                  : 0}{' '}
-                km
+                {convertMetersToKm(item?.distance, true)}
               </Text>
             </View>
           </View>
@@ -108,9 +104,9 @@ const JournalScreen = ({ navigation }: any) => {
               <Text style={userStyle.infoLabel}>{t('co2_estimate')}</Text>
               <Text style={[userStyle.infoValue, { color: color.CRIMSON }]}>
                 {item?.co2
-                  ? item.co2.toFixed(2)
+                  ? item?.co2.toFixed(2)
                   : item?.co2_estimated
-                  ? item.co2_estimated.toFixed(2)
+                  ? item?.co2_estimated.toFixed(2)
                   : '0'}{' '}
                 g
               </Text>
@@ -160,9 +156,9 @@ const JournalScreen = ({ navigation }: any) => {
           showsVerticalScrollIndicator={false}
           style={{ flex: 1, width: '100%' }}
           onEndReached={() => {
-            if (!loading) {
-              fetchTrips({ limit: 10, loadMore: true });
-            }
+            // if (!loading) {
+            //   fetchTrips({ limit: 10, loadMore: true });
+            // }
           }}
           onEndReachedThreshold={0.1}
           stickySectionHeadersEnabled

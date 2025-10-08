@@ -7,6 +7,7 @@ export const ApiUrl = {
     delete_account: '/client',
     sign_up: '/client/sign-up',
     login: '/auth/client/login',
+    update_user_info: '/client',
     verify_account: '/client/verify-account',
     get_user_info: '/auth/client/current',
     login_google: '/auth/client/google/login',

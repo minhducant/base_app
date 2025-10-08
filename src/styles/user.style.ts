@@ -1,8 +1,10 @@
-import { ViewStyle } from 'react-native';
+import { ViewStyle, Dimensions } from 'react-native';
 import normalize from 'react-native-normalize';
 
 import color from '@styles/color';
 import themeStyle from '@styles/theme.style';
+
+const { width } = Dimensions.get('window');
 
 export const userStyle: any = {
   container: {
@@ -13,10 +15,11 @@ export const userStyle: any = {
     marginBottom: normalize(-300),
   },
   fastImage: {
-    height: normalize(120),
-    width: normalize(120),
+    height: normalize(100),
+    width: normalize(100),
     borderRadius: normalize(500),
     marginBottom: normalize(16),
+    marginTop: normalize(16),
     alignSelf: 'center',
   },
   txtName: {
@@ -283,5 +286,16 @@ export const userStyle: any = {
     color: color.MAIN,
     fontFamily: themeStyle.FONT_BOLD,
     marginTop: normalize(16),
+  },
+  viewEditIcon: {
+    position: 'absolute',
+    bottom: normalize(8),
+    left: width / 2 + 16,
+    backgroundColor: color.MAIN,
+    borderRadius: 20,
+    padding: 6,
+    alignSeft: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
   },
 };

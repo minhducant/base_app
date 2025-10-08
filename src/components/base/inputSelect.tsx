@@ -82,7 +82,7 @@ export const InputSelect = forwardRef<InputRef, InputProps>(
             dropdownPosition={props?.dropdownPosition || 'auto'}
             placeholder={!isFocus ? props.placeholder : '...'}
             placeholderStyle={[styles.textStyle, {color: 'gray'}]}
-            style={[styles.dropdown, isFocus && {borderColor: 'red'}]}
+            style={[styles.dropdown, isFocus && {borderColor: color.MAIN}]}
           />
         </View>
       </View>

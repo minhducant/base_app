@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-import color from '@styles/color'
+import color from '@styles/color';
 
 interface ProgressProps {
   current: number;
@@ -21,6 +21,7 @@ const ProgressBar: React.FC<ProgressProps> = ({
   showLabel = false,
 }) => {
   const progress = Math.min(current / max, 1); // chặn max = 100%
+  const barColor = progress > 0.8 ? color.MONZA : mainColor;
 
   return (
     <View style={styles.container}>
@@ -28,7 +29,7 @@ const ProgressBar: React.FC<ProgressProps> = ({
         <View
           style={[
             styles.barFill,
-            { width: `${progress * 100}%`, backgroundColor: mainColor, height },
+            { width: `${progress * 100}%`, backgroundColor: barColor, height },
           ]}
         />
       </View>

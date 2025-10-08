@@ -1,7 +1,7 @@
-import {ApiUrl} from '@configs/apiUrl';
-import {client} from '@configs/axiosConfig';
-import {extraParams} from '@utils/apiResponse';
-import {AppApiTypeRequest} from '@api/typeRequest';
+import { ApiUrl } from '@configs/apiUrl';
+import { client } from '@configs/axiosConfig';
+import { extraParams } from '@utils/apiResponse';
+import { AppApiTypeRequest } from '@api/typeRequest';
 
 export class AuthApi {
   static async getUserInfo(params: any) {
@@ -53,6 +53,13 @@ export class AuthApi {
   }
   static async VerifyAcount(params: any) {
     const response = await client.post(ApiUrl.auth.verify_account, params);
+    return response;
+  }
+  static async UpdateUserInfo(_id: string, params: any) {
+    const response = await client.patch(
+      `${ApiUrl.auth.update_user_info}/${_id}`,
+      params,
+    );
     return response;
   }
 }
