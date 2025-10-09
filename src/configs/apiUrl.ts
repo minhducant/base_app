@@ -1,6 +1,6 @@
 export const API_PREFIX = '/api/v1';
-// export const MAIN_DOMAIN = 'http://172.104.189.80:3003';
-export const MAIN_DOMAIN = 'http://192.168.1.132:3003';
+export const MAIN_DOMAIN = 'http://172.104.189.80:3003';
+// export const MAIN_DOMAIN = 'http://192.168.1.132:3003';
 
 export const ApiUrl = {
   auth: {
