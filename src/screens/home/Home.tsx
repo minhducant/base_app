@@ -179,7 +179,7 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={homeStyle.titleProgressCard}>
               {goalList?.achieved_co2 > goalList?.target_co2
                 ? t('exceeded_monthly_goal')
-                : `${t('monthly_emission_progress')} ${goalList?.month}`}
+                : `${t('monthly_emission_progress')} ${goalList?.month || ""}`}
             </Text>
             <Text style={homeStyle.valueProgressCard}>
               {goalList?.achieved_co2 || 0}g / {goalList?.target_co2 || 0}g CO₂

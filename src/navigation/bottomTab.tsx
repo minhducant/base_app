@@ -14,7 +14,9 @@ import GoalScreen from '@screens/user/Goal';
 import ReportScreen from '@screens/user/Report';
 import JournalScreen from '@screens/user/Journal';
 import ProfileScreen from '@screens/user/Profile';
+import SettingsScreen from '@screens/user/Settings';
 import CreateJournalScreen from '@screens/user/CreateJournal';
+import ChangePasswordScreen from '@screens/user/ChangePassword';
 import ChangeLanguageScreen from '@screens/user/ChangeLanguage';
 import SelectLocationScreen from '@screens/home/SelectLocation';
 import SelectOriginDestination from '@screens/home/SelectOrigin';
@@ -30,7 +32,9 @@ function NoFooter() {
     ProfileScreen,
     ReportScreen,
     JournalScreen,
+    SettingsScreen,
     CreateJournalScreen,
+    ChangePasswordScreen,
     SelectLocationScreen,
     ChangeLanguageScreen,
     SelectOriginDestination,

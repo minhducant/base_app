@@ -145,7 +145,14 @@ export default function UserScreen({ navigation }: any) {
               />
               <Text style={userStyle.txtFunction}>{t('app_language')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={userStyle.functionItem}>
+            <TouchableOpacity
+              style={userStyle.functionItem}
+              onPress={() =>
+                navigation.navigate('NoFooter', {
+                  screen: 'SettingsScreen',
+                })
+              }
+            >
               <IconLibrary
                 library="Ionicons"
                 name="settings-outline"

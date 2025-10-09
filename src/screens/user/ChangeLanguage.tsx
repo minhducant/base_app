@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import normalize from 'react-native-normalize';
+import { LocaleConfig } from 'react-native-calendars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 

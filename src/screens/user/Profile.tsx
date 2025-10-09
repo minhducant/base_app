@@ -3,16 +3,17 @@ import { useTranslation } from 'react-i18next';
 import FastImage from 'react-native-fast-image';
 import { useSelector, useDispatch } from 'react-redux';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 
 import { AuthApi } from '@api/auth';
 import { showMessage } from '@utils/index';
 import { setIsLoading } from '@stores/action';
 import { userStyle } from '@styles/user.style';
 import { getUserInfo } from '@stores/user/store';
-import { InputText, InputSelect } from '@components/base';
 import { ActionButton } from '@components/home/actionButton';
 import HeaderBackStatusBar from '@components/header/headerWithTitle';
+import { InputText, InputSelect, IconLibrary } from '@components/base';
 
 function isValidEmail(email: string) {
   const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
@@ -77,6 +78,31 @@ const ProfileScreen = ({ navigation }: any) => {
     }
   };
 
+  const handlePickImage = async () => {
+    try {
+      const result = await launchImageLibrary({
+        mediaType: 'photo',
+        quality: 0.8,
+        selectionLimit: 1,
+      });
+
+      if (result.didCancel) return;
+      const file = result.assets?.[0];
+      if (!file?.uri) return;
+      dispatch(setIsLoading(true));
+      const formData = new FormData();
+      formData.append('file', {
+        uri: file.uri,
+        name: file.fileName || 'avatar.jpg',
+        type: file.type || 'image/jpeg',
+      });
+    } catch (error) {
+      showMessage.fail(t('upload_failed'));
+    } finally {
+      dispatch(setIsLoading(false));
+    }
+  };
+
   return (
     <View style={userStyle.container}>
       <HeaderBackStatusBar title={t('update_account')} />
@@ -84,16 +110,32 @@ const ProfileScreen = ({ navigation }: any) => {
         showsVerticalScrollIndicator={false}
         style={userStyle.viewCreateJournal}
       >
-        <TouchableOpacity activeOpacity={0.7} onPress={() => {}}>
-          <FastImage
-            style={userStyle.fastImage}
-            source={
-              user?.image_url
-                ? { uri: user.image_url, priority: FastImage.priority.normal }
-                : require('@assets/images/avatar.png')
-            }
-            resizeMode={FastImage.resizeMode.cover}
-          />
+        <TouchableOpacity activeOpacity={0.7} onPress={handlePickImage}>
+          <View>
+            <FastImage
+              style={userStyle.fastImage}
+              source={
+                user?.image_url
+                  ? { uri: user.image_url, priority: FastImage.priority.normal }
+                  : require('@assets/images/avatar.png')
+              }
+              resizeMode={FastImage.resizeMode.cover}
+            />
+            <View
+              style={{
+                ...StyleSheet.absoluteFillObject,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <IconLibrary
+                library="Ionicons"
+                name="image-outline"
+                size={28}
+                color="#fff"
+              />
+            </View>
+          </View>
           <InputText
             {...userLabel.name}
             autoCapitalize="words"
