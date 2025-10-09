@@ -2,6 +2,10 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+project.ext.react = [
+    entryFile: "index.js",
+    nodeExecutableAndArgs: [project.hasProperty("NODE_BINARY") ? project.getProperty("NODE_BINARY") : "node"]
+]
 
 react {
     autolinkLibrariesWithApp()
