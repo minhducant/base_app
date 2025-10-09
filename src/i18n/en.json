@@ -186,5 +186,10 @@
   "walk": "Walking 🚶‍♂️",
   "train": "Train 🚆",
   "airplane": "Airplane ✈️",
-  "truck": "Truck 🚚"
+  "truck": "Truck 🚚",
+  "gasoline": "Gasoline",
+  "electric": "Electric",
+  "select_fuel_type": "Select fuel type",
+  "select_transport": "Select transport",
+  "total": "Total"
 }

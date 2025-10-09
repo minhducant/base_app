@@ -185,5 +185,10 @@
   "walk": "Đi bộ 🚶‍♂️",
   "train": "Tàu hỏa 🚆",
   "airplane": "Máy bay ✈️",
-  "truck": "Xe tải 🚚"
+  "truck": "Xe tải 🚚",
+  "gasoline": "Xăng",
+  "electric": "Điện",
+  "select_fuel_type": "Chọn loại nhiên liệu",
+  "select_transport": "Chọn phương tiện",
+  "total": "Tổng cộng"
 }

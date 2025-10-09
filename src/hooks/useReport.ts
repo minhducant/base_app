@@ -41,8 +41,8 @@ export const useReport = ({ startDate, endDate }: UseReportProps = {}) => {
         }
         dispatch(setIsLoading(true));
         const params = {
-          start_date: startDate || defaultStart,
-          end_date: endDate || defaultEnd,
+          start_date: sDate || defaultStart,
+          end_date: eDate || defaultEnd,
         };
         const res: any = await TripApi.getReport(params);
         if (res?.code === 200) {

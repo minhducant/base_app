@@ -212,7 +212,6 @@ export const RangeCalendar = ({
     setStartDate(null);
     setEndDate(null);
     setMarkedDates({});
-    refetch("", "")
   };
 
   return (

@@ -1,14 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import color from '@styles/color';
 import themeStyle from '@styles/theme.style';
 import { useReport } from '@hooks/useReport';
 import { userStyle } from '@styles/user.style';
-import { IconLibrary } from '@components/base';
 import { RangeCalendar } from '@components/home/RangeCalendar';
 import HeaderBackStatusBar from '@components/header/headerWithTitle';
 
@@ -32,6 +30,12 @@ const ReportScreen = () => {
   const [endDate, setEndDate] = useState<string | null>(lastDay);
   const { reportData, refetch } = useReport({ startDate, endDate });
   const { total = 0, vehicles = {} } = reportData?.by_vehicle || {};
+
+  useEffect(() => {
+    if (startDate && endDate) {
+      refetch(startDate, endDate);
+    }
+  }, [startDate, endDate]);
 
   const getAllDatesInRange = (start: string | any, end: string | any) => {
     const dates: string[] = [];
@@ -70,7 +74,7 @@ const ReportScreen = () => {
           <Text style={userStyle.nameReport}>{t(name)}</Text>
           <Text style={userStyle.percentReport}>{percent}%</Text>
         </View>
-        <Text style={userStyle.valueReport}>{value.toFixed(2)} kg</Text>
+        <Text style={userStyle.valueReport}>{value.toFixed(2)} g</Text>
       </View>
     );
   };
@@ -135,6 +139,12 @@ const ReportScreen = () => {
             total={total}
           />
         ))}
+        <View style={[userStyle.totalItemReport]}>
+          <View style={userStyle.textReport}>
+            <Text style={userStyle.nameReport}>{t('total')}</Text>
+          </View>
+          <Text style={userStyle.valueReport}>{total.toFixed(2)} g</Text>
+        </View>
       </ScrollView>
     </View>
   );

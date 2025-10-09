@@ -119,7 +119,13 @@ const JournalScreen = ({ navigation }: any) => {
 
   return (
     <View style={userStyle.container}>
-      <HeaderBackStatusBar title={t('trip_journal')} />
+      <HeaderBackStatusBar
+        title={t('trip_journal')}
+        hasActionLeft={true}
+        actionLeft={() =>
+          navigation.navigate('BottomTabs', { screen: 'UserScreen' })
+        }
+      />
       <View style={userStyle.container}>
         <SectionList
           sections={trips}
