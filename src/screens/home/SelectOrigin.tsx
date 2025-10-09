@@ -62,7 +62,7 @@ const SelectOriginDestination = () => {
   const [durationText, setDurationText] = useState('');
   const [co2Estimates, setCo2Estimates] = useState<any>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<
-    'car' | 'motorcycle' | 'bus' | 'bike'
+    'car' | 'truck' | 'taxi' | 'bike'
   >('car');
 
   // Search state (separate for origin/destination)
@@ -85,53 +85,6 @@ const SelectOriginDestination = () => {
   const { status, checkPermission, openSettings } = useLocationPermission();
   const { ongoingTrips } = useTrip();
   const ongoingTripsRef = useRef(ongoingTrips);
-
-  // Fit camera to route coordinates (same logic as fetchRoute)
-  const fitRouteCameraToCoords = (coords: [number, number][]) => {
-    if (!coords || coords.length === 0) return;
-    let minLng = Infinity,
-      minLat = Infinity,
-      maxLng = -Infinity,
-      maxLat = -Infinity;
-    coords.forEach(([lng, lat]) => {
-      if (lng < minLng) minLng = lng;
-      if (lat < minLat) minLat = lat;
-      if (lng > maxLng) maxLng = lng;
-      if (lat > maxLat) maxLat = lat;
-    });
-    const deltaLng = Math.abs(maxLng - minLng);
-    const deltaLat = Math.abs(maxLat - minLat);
-    let padding = 50;
-    if (deltaLng < 0.001 && deltaLat < 0.001) {
-      padding = 0;
-    } else if (deltaLng < 0.003 && deltaLat < 0.003) {
-      padding = 10;
-    } else if (deltaLng < 0.01 && deltaLat < 0.01) {
-      padding = 30;
-    } else if (deltaLng < 0.05 && deltaLat < 0.05) {
-      padding = 100;
-    }
-    // Chỉ fit camera khi chưa tracking
-    if (!isTracking && cameraRef.current) {
-      cameraRef.current.fitBounds(
-        [minLng, minLat],
-        [maxLng, maxLat],
-        padding,
-        1000,
-      );
-      if (deltaLng < 0.002 && deltaLat < 0.002) {
-        const centerLng = (minLng + maxLng) / 2;
-        const centerLat = (minLat + maxLat) / 2;
-        setTimeout(() => {
-          cameraRef.current?.setCamera({
-            centerCoordinate: [centerLng, centerLat],
-            zoomLevel: 17,
-            animationDuration: 800,
-          });
-        }, 1100); // delay để fitBounds xong mới setCamera
-      }
-    }
-  };
 
   // Helper: Reset all state to initial
   const resetAllState = () => {
@@ -203,14 +156,20 @@ const SelectOriginDestination = () => {
   useEffect(() => {
     // Listener khi có location mới
     const prevLocationRef = { current: null as [number, number] | null };
-    
+
     const onLocation = BackgroundGeolocation.onLocation(location => {
       const coords: [number, number] = [
         location.coords.longitude,
         location.coords.latitude,
       ];
       setCurrentLocation(coords);
-      
+      const factor: Record<string, number> = {
+            car: vehicleFuelType === 'electric' ? 50 : 192,
+            bike: vehicleFuelType === 'electric' ? 10 : 72,
+            truck: vehicleFuelType === 'electric' ? 60 : 281,
+            taxi: vehicleFuelType === 'electric' ? 30 : 89,  // bus
+          };
+
       // Chỉ xử lý khi đang tracking và chưa auto-stop
       if (isTracking && !autoStopRef.current) {
         // Tính quãng đường thực tế đã đi
@@ -219,24 +178,15 @@ const SelectOriginDestination = () => {
           added = calculateDistance(prevLocationRef.current, coords);
         }
         prevLocationRef.current = coords;
-        
+
         // Cộng dồn quãng đường
         setTotalDistance(prev => {
           const newTotal = prev + added;
-          
-          // Tính CO2 với fuel type
-          const factor: Record<string, number> = {
-            car: vehicleFuelType === 'electric' ? 0 : 120,
-            motorcycle: vehicleFuelType === 'electric' ? 0 : 50,
-            bus: vehicleFuelType === 'electric' ? 0 : 30,
-            bike: vehicleFuelType === 'electric' ? 0 : 10,
-          };
-          
           const co2 = newTotal * factor[selectedVehicle];
           setCo2Emitted(co2);
           setCo2Estimates(co2);
           setDistanceText(`${newTotal.toFixed(2)} km`);
-          
+
           // Duration thực tế
           if (startTime) {
             const now = new Date();
@@ -253,7 +203,7 @@ const SelectOriginDestination = () => {
               )} phút`;
             setDurationText(durationStr);
           }
-          
+
           // Kiểm tra đến đích (chỉ khi tracking và chưa auto-stop)
           if (destination && !autoStopRef.current) {
             const toRad = (value: number) => (value * Math.PI) / 180;
@@ -270,21 +220,27 @@ const SelectOriginDestination = () => {
                 Math.cos(lat2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             const dist = R * c * 1000; // mét
-            
+
             console.log('Distance to destination:', dist, 'meters');
-            
-            if (dist < 50) { // 50m radius
+
+            if (dist < 50) {
+              // 50m radius
               console.log('Auto-stopping trip...');
               autoStopRef.current = true; // Set flag ngay lập tức
-              
+
               // Gọi hàm auto-stop riêng biệt
               handleAutoStop(newTotal, co2);
             }
           }
-          
+
           return newTotal;
         });
-      } else if (origin && destination && routeCoords.length > 1 && !isTracking) {
+      } else if (
+        origin &&
+        destination &&
+        routeCoords.length > 1 &&
+        !isTracking
+      ) {
         // Logic cho khi KHÔNG tracking (estimate route)
         let total = 0;
         for (let i = 1; i < routeCoords.length; i++) {
@@ -292,19 +248,10 @@ const SelectOriginDestination = () => {
         }
         setTotalDistance(total);
         setDistanceText(`${total.toFixed(2)} km`);
-        
-        // Tính CO2 với fuel type
-        const factor: Record<string, number> = {
-          car: vehicleFuelType === 'electric' ? 0 : 120,
-          motorcycle: vehicleFuelType === 'electric' ? 0 : 50,
-          bus: vehicleFuelType === 'electric' ? 0 : 30,
-          bike: vehicleFuelType === 'electric' ? 0 : 10,
-        };
-        
         const co2 = total * factor[selectedVehicle];
         setCo2Emitted(co2);
         setCo2Estimates(co2);
-        
+
         // Duration: giả lập 30km/h
         const duration = (total / 30) * 60; // phút
         setDurationText(`${Math.round(duration)} phút`);
@@ -335,25 +282,31 @@ const SelectOriginDestination = () => {
       BackgroundGeolocation.removeAllListeners();
     };
   }, [
-    isTracking, 
-    routeCoords, 
-    selectedVehicle, 
+    isTracking,
+    routeCoords,
+    selectedVehicle,
     vehicleFuelType, // Thêm dependency
-    startTime, 
+    startTime,
     destination, // Thêm dependency
-    origin // Thêm dependency
+    origin, // Thêm dependency
   ]);
 
   // Hàm xử lý auto-stop riêng biệt
   const handleAutoStop = async (finalDistance: number, finalCO2: number) => {
     try {
-      console.log('Auto-stopping with distance:', finalDistance, 'CO2:', finalCO2);
-      
+      console.log(
+        'Auto-stopping with distance:',
+        finalDistance,
+        'CO2:',
+        finalCO2,
+      );
+
       // Dừng tracking ngay lập tức
       setIsTracking(false);
       BackgroundGeolocation.stop();
       Geolocation.stopObserving();
       
+
       // Gọi API update trip
       const tripId = currentTripId || ongoingTrips?._id;
       if (tripId) {
@@ -363,19 +316,18 @@ const SelectOriginDestination = () => {
           distance: finalDistance,
           co2: finalCO2,
         });
-        
+
         if (res?.code === 200) {
           showMessage.success('Đã đến đích! Kết thúc chuyến đi.');
         } else {
           showMessage.fail('Lỗi khi tự động kết thúc chuyến đi');
         }
       }
-      
+
       // Hiển thị modal
       setTimeout(() => {
         setShowSummaryModal(true);
       }, 500);
-      
     } catch (error) {
       console.error('Auto-stop error:', error);
       showMessage.fail('Lỗi khi tự động kết thúc chuyến đi');
@@ -388,7 +340,8 @@ const SelectOriginDestination = () => {
       origin &&
       destination &&
       distanceText !== '' &&
-      !alertShownRef.current
+      !alertShownRef.current &&
+      !ongoingTrips?.status
     ) {
       const distanceKm = parseFloat(distanceText.replace(/[^0-9.]/g, '')) || 0;
       if (!distanceKm) return;
@@ -483,12 +436,13 @@ const SelectOriginDestination = () => {
   const startTracking = async () => {
     if (!status || status !== 'granted') {
       openSettings();
+
       return;
     }
-    
+
     // Reset auto-stop flag khi bắt đầu trip mới
     autoStopRef.current = false;
-    
+
     try {
       dispatch(setIsLoading(true));
       const res = await TripApi.createTrip({
@@ -501,25 +455,25 @@ const SelectOriginDestination = () => {
         status: 'ongoing',
         coord: routeCoords,
       });
-      
+
       if (!res?.client_id) {
         showMessage.fail(t('cannot_create_trip'));
         return;
       }
-      
+
       setCurrentTripId(res._id || res.client_id);
       setIsTracking(true);
-      
+
       if (origin) {
         setCurrentLocation(origin);
       }
-      
+
       setStartTime(new Date());
       setCo2Estimates(0);
       setDurationText('0');
       setTotalDistance(0);
       setDistanceText('0');
-      
+
       BackgroundGeolocation.start();
     } catch (err) {
       console.error('Start tracking error:', err);
@@ -535,31 +489,36 @@ const SelectOriginDestination = () => {
       console.log('Trip already auto-stopped');
       return;
     }
-    
+
     const tripId = currentTripId || ongoingTrips?._id;
 
     if (!tripId) {
       showMessage.fail('Không có chuyến đi nào đang diễn ra');
       return;
     }
-    
+
     try {
       dispatch(setIsLoading(true));
-      
+
       // Dừng tracking ngay lập tức
       setIsTracking(false);
       BackgroundGeolocation.stop();
       Geolocation.stopObserving();
-      
+
+      const finalDistance = totalDistance;
+      const finalCO2 = co2Emitted;
+
       const res: any = await TripApi.updateTrip(tripId, {
         endedAt: new Date(),
         status: 'ended',
-        distance: totalDistance,
-        co2: co2Emitted,
+        distance: finalDistance,
+        co2: finalCO2,
       });
-      
+
       if (res?.code === 200) {
-        showMessage.success('Kết thúc chuyến đi thành công');
+        // showMessage.success('Kết thúc chuyến đi thành công');
+        setTotalDistance(finalDistance);
+        setCo2Emitted(finalCO2);
         setShowSummaryModal(true);
       } else {
         showMessage.fail('Kết thúc chuyến đi thất bại');
@@ -732,6 +691,7 @@ const SelectOriginDestination = () => {
       const res = await fetch(
         `https://rsapi.goong.io/Direction?origin=${origin[1]},${origin[0]}&destination=${destination[1]},${destination[0]}&vehicle=${vehicle}&api_key=${GOONG_API_KEY}`,
       );
+      console.log("response", res);
       const data = await res.json();
       if (data?.routes?.length > 0) {
         const route = data.routes[0];
@@ -789,10 +749,10 @@ const SelectOriginDestination = () => {
           // Ước tính CO₂ với fuel type
           const distanceKm = route.legs[0].distance.value / 1000;
           const factor: Record<string, number> = {
-            car: vehicleFuelType === 'electric' ? 0 : 120,
-            motorcycle: vehicleFuelType === 'electric' ? 0 : 50,
-            bus: vehicleFuelType === 'electric' ? 0 : 30,
-            bike: vehicleFuelType === 'electric' ? 0 : 10,
+            car: vehicleFuelType === 'electric' ? 50 : 192,
+            bike: vehicleFuelType === 'electric' ? 10 : 72,
+            truck: vehicleFuelType === 'electric' ? 60 : 281,
+            taxi: vehicleFuelType === 'electric' ? 30 : 89,  // bus
           };
           const estimates = distanceKm * factor[selectedVehicle];
           setCo2Estimates(estimates);
@@ -809,7 +769,7 @@ const SelectOriginDestination = () => {
     { key: 'car', label: t('car') },
     { key: 'bike', label: t('bike') },
     { key: 'truck', label: t('truck') },
-    { key: 'bus', label: t('bus') },
+    { key: 'taxi', label: t('bus') },
   ];
 
   return (
@@ -1021,6 +981,7 @@ const SelectOriginDestination = () => {
             >
               <MapboxGL.Camera
                 ref={cameraRef}
+                centerCoordinate={currentLocation || [105.8342, 21.0278]}
                 animationMode="none"
                 animationDuration={0}
               />
@@ -1178,9 +1139,9 @@ const SelectOriginDestination = () => {
               <Text
                 style={[
                   styles.text,
-                  { 
-                    color: co2Estimates === 0 ? color.MAIN : color.CRIMSON, 
-                    fontWeight: 'bold' 
+                  {
+                    color: co2Estimates === 0 ? color.MAIN : color.CRIMSON,
+                    fontWeight: 'bold',
                   },
                 ]}
               >
