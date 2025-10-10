@@ -4,8 +4,8 @@ import {
   Text,
   Modal,
   StyleSheet,
-  TouchableWithoutFeedback,
   TouchableOpacity,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import normalize from 'react-native-normalize';
 import { useTranslation } from 'react-i18next';

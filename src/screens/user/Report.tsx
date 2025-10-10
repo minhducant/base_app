@@ -1,129 +1,151 @@
-import React from 'react';
-import { Text, View } from 'react-native';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Text, View, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
 
+import color from '@styles/color';
+import themeStyle from '@styles/theme.style';
+import { useReport } from '@hooks/useReport';
 import { userStyle } from '@styles/user.style';
+import { RangeCalendar } from '@components/home/RangeCalendar';
 import HeaderBackStatusBar from '@components/header/headerWithTitle';
+
+const formatLocalDate = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const ReportScreen = () => {
   const { t } = useTranslation();
-  const data1 = [
-    { value: 70 },
-    { value: 36 },
-    { value: 50 },
-    { value: 40 },
-    { value: 18 },
-    { value: 38 },
-  ];
-  const data2 = [
-    { value: 50 },
-    { value: 10 },
-    { value: 45 },
-    { value: 30 },
-    { value: 45 },
-    { value: 18 },
-  ];
+  const now = new Date();
+  const firstDay = formatLocalDate(
+    new Date(now.getFullYear(), now.getMonth(), 1),
+  );
+  const lastDay = formatLocalDate(
+    new Date(now.getFullYear(), now.getMonth() + 1, 0),
+  );
+  const [startDate, setStartDate] = useState<string | null>(firstDay);
+  const [endDate, setEndDate] = useState<string | null>(lastDay);
+  const { reportData, refetch } = useReport({ startDate, endDate });
+  const { total = 0, vehicles = {} } = reportData?.by_vehicle || {};
+
+  useEffect(() => {
+    if (startDate && endDate) {
+      refetch(startDate, endDate);
+    }
+  }, [startDate, endDate]);
+
+  const getAllDatesInRange = (start: string | any, end: string | any) => {
+    const dates: string[] = [];
+    let current = new Date(start);
+    const endD = new Date(end);
+    while (current <= endD) {
+      const dateStr = current.toISOString().split('T')[0];
+      dates.push(dateStr);
+      current.setDate(current.getDate() + 1);
+    }
+    return dates;
+  };
+
+  const lineData = useMemo(() => {
+    if (!startDate || !endDate) return [];
+    const allDates = getAllDatesInRange(startDate, endDate);
+    return allDates.map(date => {
+      const found = reportData?.daily?.find(
+        (item: { date: string }) => item.date === date,
+      );
+      const day = new Date(date).getDate();
+      const month = new Date(date).getMonth() + 1;
+      return {
+        value: found ? found.value : 0,
+        label: `${day}/${month}`,
+      };
+    });
+  }, [startDate, endDate, reportData]);
+
+  const VehicleItem = ({ name, value, total }: any) => {
+    const percent = total > 0 ? Math.round((value / total) * 100) : 0;
+    return (
+      <View style={userStyle.itemReport}>
+        <View style={userStyle.textReport}>
+          <View style={userStyle.infoReport}></View>
+          <Text style={userStyle.nameReport}>{t(name)}</Text>
+          <Text style={userStyle.percentReport}>{percent}%</Text>
+        </View>
+        <Text style={userStyle.valueReport}>{value.toFixed(2)} g</Text>
+      </View>
+    );
+  };
 
   return (
     <View style={userStyle.container}>
       <HeaderBackStatusBar title={t('emission_report')} />
-      <View style={userStyle.container}>
-        <LineChart
-          areaChart
-          curved
-          data={data1}
-          data2={data2}
-          hideDataPoints
-          spacing={68}
-          color1="#8a56ce"
-          color2="#56acce"
-          startFillColor1="#8a56ce"
-          startFillColor2="#56acce"
-          endFillColor1="#8a56ce"
-          endFillColor2="#56acce"
-          startOpacity={0.9}
-          endOpacity={0.2}
-          initialSpacing={0}
-          noOfSections={4}
-          yAxisColor="white"
-          yAxisThickness={0}
-          // rulesType={ruleTypes.SOLID}
-          rulesColor="gray"
-          yAxisTextStyle={{ color: 'gray' }}
-          yAxisLabelSuffix="%"
-          xAxisColor="lightgray"
-          pointerConfig={{
-            pointerStripUptoDataPoint: true,
-            pointerStripColor: 'lightgray',
-            pointerStripWidth: 2,
-            strokeDashArray: [2, 5],
-            pointerColor: 'lightgray',
-            radius: 4,
-            pointerLabelWidth: 100,
-            pointerLabelHeight: 120,
-            pointerLabelComponent: (
-              items: {
-                value:
-                  | string
-                  | number
-                  | bigint
-                  | boolean
-                  | React.ReactElement<
-                      unknown,
-                      string | React.JSXElementConstructor<any>
-                    >
-                  | Iterable<React.ReactNode>
-                  | React.ReactPortal
-                  | Promise<
-                      | string
-                      | number
-                      | bigint
-                      | boolean
-                      | React.ReactPortal
-                      | React.ReactElement<
-                          unknown,
-                          string | React.JSXElementConstructor<any>
-                        >
-                      | Iterable<React.ReactNode>
-                      | null
-                      | undefined
-                    >
-                  | null
-                  | undefined;
-              }[],
-            ) => {
-              return (
-                <View
-                  style={{
-                    height: 120,
-                    width: 100,
-                    backgroundColor: '#282C3E',
-                    borderRadius: 4,
-                    justifyContent: 'center',
-                    paddingLeft: 16,
-                  }}
-                >
-                  <Text style={{ color: 'lightgray', fontSize: 12 }}>
-                    {2018}
-                  </Text>
-                  <Text style={{ color: 'white', fontWeight: 'bold' }}>
-                    {items[0].value}
-                  </Text>
-                  <Text
-                    style={{ color: 'lightgray', fontSize: 12, marginTop: 12 }}
-                  >
-                    {2019}
-                  </Text>
-                  <Text style={{ color: 'white', fontWeight: 'bold' }}>
-                    {items[1].value}
-                  </Text>
-                </View>
-              );
-            },
-          }}
-        />
+      <RangeCalendar
+        endDate={endDate}
+        startDate={startDate}
+        setEndDate={setEndDate}
+        setStartDate={setStartDate}
+        refetch={(sDate, eDate) => refetch(sDate, eDate)}
+      />
+      <View style={userStyle.viewChart}>
+        <Text style={userStyle.titleChart}>{t('co2_emission_chart')}</Text>
+        <View style={{ width: '100%', overflow: 'hidden' }}>
+          <LineChart
+            areaChart
+            curved
+            isAnimated
+            showDataPointOnFocus
+            data={lineData}
+            height={250}
+            spacing={44}
+            initialSpacing={22}
+            color1={color.MAIN}
+            startFillColor1={color.MAIN}
+            startOpacity={0.8}
+            endOpacity={0.3}
+            textShiftY={-2}
+            textShiftX={-5}
+            textFontSize={13}
+            xAxisLabelTextStyle={{
+              fontFamily: themeStyle.FONT_FAMILY,
+              fontSize: 13,
+              color: color.DUSTY_GRAY,
+            }}
+            yAxisTextStyle={{
+              fontFamily: themeStyle.FONT_FAMILY,
+              fontSize: 13,
+              color: color.DUSTY_GRAY,
+            }}
+            dataPointsColor={color.MAIN}
+            hideRules
+            xAxisThickness={0}
+            yAxisThickness={0}
+            textColor="black"
+            showValuesAsDataPointsText
+          />
+        </View>
       </View>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={userStyle.viewCreateJournal}
+      >
+        {Object.keys(vehicles).map(key => (
+          <VehicleItem
+            key={key}
+            name={key}
+            value={vehicles[key]}
+            total={total}
+          />
+        ))}
+        <View style={[userStyle.totalItemReport]}>
+          <View style={userStyle.textReport}>
+            <Text style={userStyle.nameReport}>{t('total')}</Text>
+          </View>
+          <Text style={userStyle.valueReport}>{total.toFixed(2)} g</Text>
+        </View>
+      </ScrollView>
     </View>
   );
 };

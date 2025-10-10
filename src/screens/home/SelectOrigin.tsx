@@ -766,8 +766,8 @@ const SelectOriginDestination = () => {
   };
 
   const vehicles = [
-    { key: 'car', label: t('car') },
     { key: 'bike', label: t('bike') },
+    { key: 'car', label: t('car') },
     { key: 'truck', label: t('truck') },
     { key: 'taxi', label: t('bus') },
   ];

@@ -32,6 +32,7 @@ const CreateJournalScreen = ({ navigation }: any) => {
   const [distanceText, setDistanceText] = useState('');
   const [destinationText, setDestinationText] = useState('');
   const [selectedVehicle, setSelectedVehicle] = useState('bike');
+  const [selectedFuelType, setSelectedFuelType] = useState('gasoline');
   const [destinationQuery, setDestinationQuery] = useState('');
   const [origin, setOrigin] = useState<[number, number] | null>(null);
   const [destination, setDestination] = useState<[number, number] | null>(null);
@@ -48,11 +49,18 @@ const CreateJournalScreen = ({ navigation }: any) => {
     { key: 'car', label: t('car') },
     { key: 'truck', label: t('truck') },
     { key: 'bus', label: t('bus') },
+    { key: 'train', label: t('train') },
+    { key: 'airplane', label: t('airplane') },
+  ];
+
+  const fuelTypes = [
+    { key: 'gasoline', label: t('gasoline'), icon: '⛽' },
+    { key: 'electric', label: t('electric'), icon: '🔋' },
   ];
 
   useEffect(() => {
     if (origin && destination) {
-      fetchRoute(selectedVehicle);
+      fetchRoute(selectedVehicle, selectedFuelType);
     }
   }, [origin, destination]);
 
@@ -123,12 +131,23 @@ const CreateJournalScreen = ({ navigation }: any) => {
     } catch (err) {}
   };
 
-  const fetchRoute = async (vehicle: any) => {
+  const fetchRoute = async (vehicle: any, fuel: any) => {
     if (!origin || !destination) return;
     try {
       dispatch(setIsLoading(true));
+      const apiVehicleMap: Record<any, string> = {
+        car: 'car',
+        bus: 'car',
+        train: 'car',
+        airplane: 'car',
+        bike: 'bike',
+        walk: 'foot',
+        truck: 'car',
+        taxi: 'car',
+      };
+      const vehicleForApi = apiVehicleMap[vehicle] || 'car';
       const res = await fetch(
-        `https://rsapi.goong.io/Direction?origin=${origin[1]},${origin[0]}&destination=${destination[1]},${destination[0]}&vehicle=${vehicle}&api_key=${GOONG_API_KEY}`,
+        `https://rsapi.goong.io/Direction?origin=${origin[1]},${origin[0]}&destination=${destination[1]},${destination[0]}&vehicle=${vehicleForApi}&api_key=${GOONG_API_KEY}`,
       );
       const data = await res.json();
       if (data?.routes?.length > 0) {
@@ -136,7 +155,7 @@ const CreateJournalScreen = ({ navigation }: any) => {
         setDistance(route.legs[0].distance.value);
         setDistanceText(route.legs[0].distance.text);
         const distanceKm = route.legs[0].distance.value / 1000;
-        const estimates = calculateVehicleCO(vehicle, distanceKm);
+        const estimates = calculateVehicleCO(vehicle, distanceKm, fuel);
         setCo2Emitted(estimates);
       } else {
       }
@@ -173,7 +192,7 @@ const CreateJournalScreen = ({ navigation }: any) => {
         showMessage.fail(t('cannot_create_trip'));
         return;
       }
-      navigation.goBack();
+      navigation.navigate('NoFooter', { screen: 'JournalScreen' });
     } catch (err) {
       showMessage.fail(t('error_occurred'));
     } finally {
@@ -252,7 +271,7 @@ const CreateJournalScreen = ({ navigation }: any) => {
             )}
           />
         )}
-        <Text style={userStyle.labelJournal}>Chọn phương tiện</Text>
+        <Text style={userStyle.labelJournal}>{t('select_transport')}</Text>
         <View style={userStyle.optionContainer}>
           {vehicles.map(vehicle => (
             <TouchableOpacity
@@ -263,10 +282,30 @@ const CreateJournalScreen = ({ navigation }: any) => {
               ]}
               onPress={() => {
                 setSelectedVehicle(vehicle.key as any);
-                fetchRoute(vehicle.key as any);
+                fetchRoute(vehicle.key as any, selectedFuelType);
               }}
             >
               <Text style={userStyle.optionText}>{t(vehicle.label)}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <Text style={userStyle.labelJournal}>{t('select_fuel_type')}</Text>
+        <View style={userStyle.optionContainer}>
+          {fuelTypes.map(fuel => (
+            <TouchableOpacity
+              key={fuel.key}
+              style={[
+                userStyle.optionItemFuel,
+                selectedFuelType === fuel.key && userStyle.selectedOption,
+              ]}
+              onPress={() => {
+                setSelectedFuelType(fuel.key as any);
+                fetchRoute(selectedVehicle, fuel.key as any);
+              }}
+            >
+              <Text style={userStyle.optionText}>
+                {t(fuel.label)} {t(fuel.icon)}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>

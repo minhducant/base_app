@@ -43,40 +43,12 @@ export default function HomeScreen({ navigation }: any) {
     location?.longitude,
   );
   const [showTipModal, setShowTipModal] = useState(false);
-  const [showTripModal, setShowTripModal] = useState(false);
 
   const onRefresh = () => {
     refreshControl.current = true;
     loadWeather();
     loadGoal();
     refreshControl.current = false;
-  };
-
-  const calculateTripEmission = (tripData: any) => {
-    // Công thức tính toán đơn giản - bạn có thể tùy chỉnh theo yêu cầu
-    const estimatedDistance = Math.floor(Math.random() * 100) + 10; // km (mock data)
-    let co2PerKm = 0;
-    if (tripData.vehicle === 'car') {
-      co2PerKm = tripData.fuelType === 'electric' ? 0.05 : 0.12; // kg CO2/km
-    } else if (tripData.vehicle === 'plane') {
-      co2PerKm = 0.25;
-    } else if (tripData.vehicle === 'train') {
-      co2PerKm = 0.04;
-    } else if (tripData.vehicle === 'bus') {
-      co2PerKm = 0.08;
-    } else if (tripData.vehicle === 'motorbike') {
-      co2PerKm = tripData.fuelType === 'electric' ? 0.02 : 0.09;
-    }
-    const totalCO2 = (estimatedDistance * co2PerKm).toFixed(2);
-    Alert.alert(
-      'Kết quả tính toán',
-      `Khoảng cách ước tính: ${estimatedDistance} km\nLượng CO2 phát thải: ${totalCO2} kg\n\nTừ: ${tripData.startPoint}\nĐến: ${tripData.endPoint}\nPhương tiện: ${tripData.vehicle}\nNhiên liệu: ${tripData.fuelType}`,
-      [{ text: 'OK' }],
-    );
-  };
-
-  const handleTripSubmit = (tripData: any) => {
-    calculateTripEmission(tripData);
   };
 
   return (
@@ -179,7 +151,7 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={homeStyle.titleProgressCard}>
               {goalList?.achieved_co2 > goalList?.target_co2
                 ? t('exceeded_monthly_goal')
-                : `${t('monthly_emission_progress')} ${goalList?.month}`}
+                : `${t('monthly_emission_progress')} ${goalList?.month || ''}`}
             </Text>
             <Text style={homeStyle.valueProgressCard}>
               {goalList?.achieved_co2 || 0}g / {goalList?.target_co2 || 0}g CO₂
@@ -204,7 +176,9 @@ export default function HomeScreen({ navigation }: any) {
           </View>
           <TouchableOpacity
             style={homeStyle.questionCard}
-            onPress={() => setShowTripModal(true)}
+            onPress={() =>
+              navigation.navigate('NoFooter', { screen: 'CreateJournalScreen' })
+            }
           >
             <QuestionVector />
             <View>
@@ -220,11 +194,6 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={homeStyle.bannerText}>ECOMOVE</Text>
           </View>
         </ScrollView>
-        <TripModal
-          visible={showTripModal}
-          onClose={() => setShowTripModal(false)}
-          onSubmit={handleTripSubmit}
-        />
         <EcoMoveModal
           visible={showTipModal}
           onClose={() => setShowTipModal(false)}

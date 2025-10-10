@@ -1,7 +1,13 @@
 import React from 'react';
 // import normalize from 'react-native-normalize';
 import { useSelector, useDispatch } from 'react-redux';
-import { StyleSheet, ActivityIndicator, Modal, View } from 'react-native';
+import {
+  Modal,
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableWithoutFeedback,
+} from 'react-native';
 
 import COLORS from '@styles/color';
 import { setIsLoading } from '@stores/action';
@@ -21,11 +27,13 @@ const ModalLoading = () => {
       animationType="fade"
       onDismiss={handleCloseModal}
     >
-     <View style={stylesLoading.centeredView}>
-        <View style={stylesLoading.modalView}>
-          <ActivityIndicator size="large" color={COLORS.MAIN} />
+      <TouchableWithoutFeedback onPress={handleCloseModal}>
+        <View style={stylesLoading.centeredView}>
+          <View style={stylesLoading.modalView}>
+            <ActivityIndicator size="large" color={COLORS.MAIN} />
+          </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };

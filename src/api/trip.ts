@@ -58,4 +58,10 @@ export class TripApi {
     const response = await client.post(ApiUrl.goal.create_goal, params);
     return response;
   }
+  static async getReport(params: any) {
+    const response = await client.get(
+      ApiUrl.trip.get_report + extraParams(params),
+    );
+    return response;
+  }
 }

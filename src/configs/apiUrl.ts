@@ -1,6 +1,6 @@
 export const API_PREFIX = '/api/v1';
 export const MAIN_DOMAIN = 'http://172.104.189.80:3003';
-// export const MAIN_DOMAIN = 'http://192.168.1.78:3003';
+// export const MAIN_DOMAIN = 'http://192.168.1.132:3003';
 
 export const ApiUrl = {
   auth: {
@@ -20,6 +20,7 @@ export const ApiUrl = {
     change_password_by_code: '/client/change-password-by-code',
   },
   trip: {
+    get_report: '/trips/report',
     get_trips: '/trips',
     get_trip_detail: '/trips',
     create_trip: '/trips',
