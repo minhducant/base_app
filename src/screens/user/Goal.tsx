@@ -20,6 +20,7 @@ import { showMessage } from '@utils/toast';
 import { setIsLoading } from '@stores/action';
 import { userStyle } from '@styles/user.style';
 import { IconLibrary } from '@components/base';
+import ProgressBar from '@components/home/progressBar';
 import { ActionButton } from '@components/home/actionButton';
 import HeaderBackStatusBar from '@components/header/headerWithTitle';
 
@@ -83,7 +84,13 @@ const GoalScreen = ({ navigation }: any) => {
     if (res.code === 200) {
       dispatch(setIsLoading(false));
       setModalVisible(false);
-      showMessage.success(t('add_goal_success'));
+      showMessage.success(
+        t(
+          Object.keys(goalList).length > 0
+            ? 'update_goal_success'
+            : 'add_goal_success',
+        ),
+      );
       setTargetCo2('');
       reload();
     } else {
@@ -137,26 +144,54 @@ const GoalScreen = ({ navigation }: any) => {
           contentContainerStyle={userStyle.scrollViewContent}
         >
           {Object.keys(goalList).length > 0 && (
-            <View style={userStyle.viewGoal}>
-              <Text style={userStyle.titleGoal}>
-                {t('emission_reduction_goal')}
-              </Text>
-              <Text style={userStyle.txtValueGoal}>
-                {goalList?.target_co2} g
-              </Text>
-            </View>
+            <>
+              <View style={userStyle.viewGoal}>
+                <Text style={userStyle.titleGoal}>
+                  {t('emission_reduction_goal')}
+                </Text>
+                <Text style={userStyle.txtValueGoal}>
+                  {goalList?.target_co2} g
+                </Text>
+                <View style={userStyle.viewProgress}>
+                  <ProgressBar
+                    max={goalList?.target_co2}
+                    current={goalList?.achieved_co2}
+                  />
+                </View>
+              </View>
+              <View style={userStyle.progressCard}>
+                <Text style={userStyle.titleProgressCard}>
+                  {goalList?.achieved_co2 > goalList?.target_co2
+                    ? t('exceeded_monthly_goal')
+                    : `${t('monthly_emission_progress')} ${
+                        goalList?.month || ''
+                      }`}
+                </Text>
+                <Text style={userStyle.valueProgressCard}>
+                  {goalList?.achieved_co2 || 0}g / {goalList?.target_co2 || 0}g
+                  CO₂ 🌱
+                </Text>
+                <ProgressBar
+                  max={goalList?.target_co2}
+                  current={goalList?.achieved_co2}
+                />
+              </View>
+            </>
           )}
         </ScrollView>
         {!isPastMonth && (
           <TouchableOpacity
             style={userStyle.viewAdd}
             activeOpacity={0.7}
-            onPress={() => setModalVisible(true)}
+            onPress={() => {
+              setTargetCo2(goalList?.target_co2?.toString() || '');
+              setModalVisible(true);
+            }}
           >
             <IconLibrary
               library="Feather"
-              name="plus"
-              size={30}
+              name={Object.keys(goalList).length > 0 ? 'edit' : 'plus'}
+              size={20}
               color="white"
             />
           </TouchableOpacity>
@@ -168,7 +203,11 @@ const GoalScreen = ({ navigation }: any) => {
             <TouchableWithoutFeedback>
               <View style={userStyle.viewModalGoal}>
                 <Text style={userStyle.titleModalGoal}>
-                  {t('add_emission_reduction_goal')}
+                  {t(
+                    Object.keys(goalList).length > 0
+                      ? 'update_emission_reduction_goal'
+                      : 'add_emission_reduction_goal',
+                  )}
                 </Text>
                 <TextInput
                   value={targetCo2}
@@ -177,7 +216,14 @@ const GoalScreen = ({ navigation }: any) => {
                   style={userStyle.inputGoal}
                   placeholder={t('enter_target_co2')}
                 />
-                <ActionButton title={t('add_co2_goal')} onPress={onAddGoal} />
+                <ActionButton
+                  title={t(
+                    Object.keys(goalList).length > 0
+                      ? 'update_goal'
+                      : 'add_co2_goal',
+                  )}
+                  onPress={onAddGoal}
+                />
               </View>
             </TouchableWithoutFeedback>
           </View>

@@ -191,5 +191,8 @@
   "electric": "Electric",
   "select_fuel_type": "Select fuel type",
   "select_transport": "Select transport",
-  "total": "Total"
+  "total": "Total",
+  "update_emission_reduction_goal": "Update emission reduction goal",
+  "update_goal": "Update goal",
+  "update_goal_success": "Goal updated successfully"
 }

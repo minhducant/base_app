@@ -19,7 +19,7 @@ import HeaderBackStatusBar from '@components/header/headerWithTitle';
 
 const JournalScreen = ({ navigation }: any) => {
   const { t } = useTranslation();
-  const { trips, loading, fetchTrips } = useTrip();
+  const { trips, loading, fetchTrips, hasMore } = useTrip();
   const [refreshing, setRefreshing] = useState(false);
 
   useFocusEffect(
@@ -27,15 +27,6 @@ const JournalScreen = ({ navigation }: any) => {
       fetchTrips({ page: 1, limit: 10 });
     }, [fetchTrips]),
   );
-
-  const onRefresh = useCallback(async () => {
-    try {
-      setRefreshing(true);
-      await fetchTrips({ page: 1, limit: 10 });
-    } finally {
-      setRefreshing(false);
-    }
-  }, [fetchTrips]);
 
   const renderItem = ({ item, index, section }: any) => {
     const isLastItem =
@@ -117,6 +108,11 @@ const JournalScreen = ({ navigation }: any) => {
     );
   };
 
+  const renderFooter = () => {
+    if (!hasMore) return null;
+    return <ActivityIndicator style={{ marginVertical: 16 }} />;
+  };
+
   return (
     <View style={userStyle.container}>
       <HeaderBackStatusBar
@@ -134,8 +130,8 @@ const JournalScreen = ({ navigation }: any) => {
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={onRefresh}
               colors={['#ED2127']}
+              onRefresh={() => fetchTrips({ loadMore: false })}
             />
           }
           ListEmptyComponent={() =>
@@ -151,22 +147,18 @@ const JournalScreen = ({ navigation }: any) => {
             </View>
           )}
           renderItem={renderItem}
-          ListFooterComponent={() =>
-            loading ? (
-              <ActivityIndicator size="large" color={color.MAIN} />
-            ) : null
-          }
+          onEndReached={() => {
+            if (hasMore && !loading) {
+              fetchTrips({ loadMore: true });
+            }
+          }}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={renderFooter}
           contentContainerStyle={
             trips.length === 0 ? { flex: 1 } : { paddingBottom: 20 }
           }
           showsVerticalScrollIndicator={false}
           style={{ flex: 1, width: '100%' }}
-          onEndReached={() => {
-            // if (!loading) {
-            //   fetchTrips({ limit: 10, loadMore: true });
-            // }
-          }}
-          onEndReachedThreshold={0.1}
           stickySectionHeadersEnabled
         />
         <TouchableOpacity

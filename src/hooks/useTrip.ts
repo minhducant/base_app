@@ -48,7 +48,6 @@ export const useTrip = () => {
   );
 
   const fetchOngoingTrips = useCallback(async (params: any) => {
-    dispatch(setIsLoading(true));
     try {
       const res: any = await TripApi.getOngoingTrips(params);
       if (res.code === 200) {
@@ -64,12 +63,6 @@ export const useTrip = () => {
   useFocusEffect(
     useCallback(() => {
       fetchOngoingTrips({});
-    }, [fetchTrips, fetchOngoingTrips]),
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchTrips({ page: 1, limit: 10 });
     }, [fetchTrips, fetchOngoingTrips]),
   );
 

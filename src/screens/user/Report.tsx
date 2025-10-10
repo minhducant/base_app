@@ -28,12 +28,17 @@ const ReportScreen = () => {
   );
   const [startDate, setStartDate] = useState<string | null>(firstDay);
   const [endDate, setEndDate] = useState<string | null>(lastDay);
-  const { reportData, refetch } = useReport({ startDate, endDate });
+  const { reportData, refetch, setReportData } = useReport({
+    startDate,
+    endDate,
+  });
   const { total = 0, vehicles = {} } = reportData?.by_vehicle || {};
 
   useEffect(() => {
     if (startDate && endDate) {
       refetch(startDate, endDate);
+    } else {
+      setReportData({})
     }
   }, [startDate, endDate]);
 

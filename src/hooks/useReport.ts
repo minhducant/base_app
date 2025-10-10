@@ -61,12 +61,16 @@ export const useReport = ({ startDate, endDate }: UseReportProps = {}) => {
 
   useFocusEffect(
     useCallback(() => {
-      getReport(startDate || defaultStart, endDate || defaultEnd);
-    }, [getReport, startDate, endDate, defaultStart, defaultEnd]),
+      if (startDate && endDate) {
+        getReport(startDate, endDate);
+      } else {
+        setReportData({});
+      }
+    }, [getReport, startDate, endDate]),
   );
-
   return {
     reportData,
+    setReportData,
     refetch: getReport,
   };
 };
