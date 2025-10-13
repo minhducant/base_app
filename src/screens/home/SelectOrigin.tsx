@@ -46,6 +46,9 @@ const SelectOriginDestination = () => {
     'gasoline' | 'electric'
   >('gasoline');
 
+  ///
+  const [timerInterval, setTimerInterval] = useState<ReturnType<typeof setInterval> | null>(null);
+
   // Trip state
   const [origin, setOrigin] = useState<[number, number] | null>(null);
   const [destination, setDestination] = useState<[number, number] | null>(null);
@@ -164,11 +167,11 @@ const SelectOriginDestination = () => {
       ];
       setCurrentLocation(coords);
       const factor: Record<string, number> = {
-            car: vehicleFuelType === 'electric' ? 50 : 192,
-            bike: vehicleFuelType === 'electric' ? 10 : 72,
-            truck: vehicleFuelType === 'electric' ? 60 : 281,
-            taxi: vehicleFuelType === 'electric' ? 30 : 89,  // bus
-          };
+        car: vehicleFuelType === 'electric' ? 50 : 192,
+        bike: vehicleFuelType === 'electric' ? 10 : 72,
+        truck: vehicleFuelType === 'electric' ? 60 : 281,
+        taxi: vehicleFuelType === 'electric' ? 30 : 89, // bus
+      };
 
       // Chỉ xử lý khi đang tracking và chưa auto-stop
       if (isTracking && !autoStopRef.current) {
@@ -188,21 +191,6 @@ const SelectOriginDestination = () => {
           setDistanceText(`${newTotal.toFixed(2)} km`);
 
           // Duration thực tế
-          if (startTime) {
-            const now = new Date();
-            const diff = (now.getTime() - startTime.getTime()) / 1000; // giây
-            let durationStr = '';
-            if (diff < 60) durationStr = `${Math.round(diff)} giây`;
-            else if (diff < 3600)
-              durationStr = `${Math.floor(diff / 60)} phút ${Math.round(
-                diff % 60,
-              )} giây`;
-            else
-              durationStr = `${Math.floor(diff / 3600)} giờ ${Math.floor(
-                (diff % 3600) / 60,
-              )} phút`;
-            setDurationText(durationStr);
-          }
 
           // Kiểm tra đến đích (chỉ khi tracking và chưa auto-stop)
           if (destination && !autoStopRef.current) {
@@ -301,11 +289,15 @@ const SelectOriginDestination = () => {
         finalCO2,
       );
 
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        setTimerInterval(null);
+      }
+
       // Dừng tracking ngay lập tức
       setIsTracking(false);
       BackgroundGeolocation.stop();
       Geolocation.stopObserving();
-      
 
       // Gọi API update trip
       const tripId = currentTripId || ongoingTrips?._id;
@@ -436,44 +428,87 @@ const SelectOriginDestination = () => {
   const startTracking = async () => {
     if (!status || status !== 'granted') {
       openSettings();
-
       return;
     }
 
-    // Reset auto-stop flag khi bắt đầu trip mới
-    autoStopRef.current = false;
-
     try {
       dispatch(setIsLoading(true));
-      const res = await TripApi.createTrip({
-        origin,
+
+      // Get current location before starting
+      const currentPos = await new Promise((resolve, reject) => {
+        Geolocation.getCurrentPosition(
+          position => {
+            resolve([position.coords.longitude, position.coords.latitude]);
+          },
+          error => {
+            reject(error);
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+        );
+      });
+
+      // Update origin with current position
+      setOrigin(currentPos as [number, number]);
+
+      // Get address for current position
+      const res = await fetch(
+        `https://rsapi.goong.io/Geocode?latlng=${
+          (currentPos as [number, number])[1]
+        },${(currentPos as [number, number])[0]}&api_key=${GOONG_API_KEY}`,
+      );
+      const data = await res.json();
+      const address = data?.results?.[0]?.formatted_address ?? 'Không xác định';
+      setOriginText(address);
+
+      // Reset auto-stop flag when starting new trip
+      autoStopRef.current = false;
+
+      const tripRes = await TripApi.createTrip({
+        origin: currentPos,
         destination,
         distance: 0,
-        origin_text: originText,
+        origin_text: address,
         destination_text: destinationText,
         vehicle: selectedVehicle,
         status: 'ongoing',
         coord: routeCoords,
       });
 
-      if (!res?.client_id) {
+      if (!tripRes?.client_id) {
         showMessage.fail(t('cannot_create_trip'));
         return;
       }
 
-      setCurrentTripId(res._id || res.client_id);
+      setCurrentTripId(tripRes._id || tripRes.client_id);
       setIsTracking(true);
 
-      if (origin) {
-        setCurrentLocation(origin);
-      }
+      const startTimeValue = new Date();
+      setStartTime(startTimeValue);
+      const interval = setInterval(() => {
+        const now = new Date();
+        const diff = (now.getTime() - startTimeValue.getTime()) / 1000; // giây
+        let durationStr = '';
 
-      setStartTime(new Date());
+        if (diff < 60) {
+          durationStr = `${Math.round(diff)} giây`;
+        } else if (diff < 3600) {
+          durationStr = `${Math.floor(diff / 60)} phút ${Math.round(
+            diff % 60,
+          )} giây`;
+        } else {
+          durationStr = `${Math.floor(diff / 3600)} giờ ${Math.floor(
+            (diff % 3600) / 60,
+          )} phút`;
+        }
+
+        setDurationText(durationStr);
+      }, 1000);
+      setTimerInterval(interval);
+
+      setCurrentLocation(currentPos as [number, number]);
       setCo2Estimates(0);
-      setDurationText('0');
       setTotalDistance(0);
       setDistanceText('0');
-
       BackgroundGeolocation.start();
     } catch (err) {
       console.error('Start tracking error:', err);
@@ -484,7 +519,6 @@ const SelectOriginDestination = () => {
   };
 
   const stopTracking = async () => {
-    // Kiểm tra nếu đã auto-stop thì không làm gì
     if (autoStopRef.current) {
       console.log('Trip already auto-stopped');
       return;
@@ -500,7 +534,25 @@ const SelectOriginDestination = () => {
     try {
       dispatch(setIsLoading(true));
 
-      // Dừng tracking ngay lập tức
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        setTimerInterval(null);
+      }
+
+      // Get final location before stopping
+      const finalPos = await new Promise((resolve, reject) => {
+        Geolocation.getCurrentPosition(
+          position => {
+            resolve([position.coords.longitude, position.coords.latitude]);
+          },
+          error => {
+            reject(error);
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+        );
+      });
+
+      // Stop tracking immediately
       setIsTracking(false);
       BackgroundGeolocation.stop();
       Geolocation.stopObserving();
@@ -508,15 +560,16 @@ const SelectOriginDestination = () => {
       const finalDistance = totalDistance;
       const finalCO2 = co2Emitted;
 
+
       const res: any = await TripApi.updateTrip(tripId, {
         endedAt: new Date(),
         status: 'ended',
-        distance: finalDistance,
+        distance: distanceText ? parseFloat(distanceText) : finalDistance,
         co2: finalCO2,
+        end_location: finalPos, // Add final location to trip data
       });
 
       if (res?.code === 200) {
-        // showMessage.success('Kết thúc chuyến đi thành công');
         setTotalDistance(finalDistance);
         setCo2Emitted(finalCO2);
         setShowSummaryModal(true);
@@ -530,6 +583,14 @@ const SelectOriginDestination = () => {
       dispatch(setIsLoading(false));
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+    };
+  }, [timerInterval]);
 
   const calculateDistance = (
     coord1: [number, number],
@@ -691,7 +752,7 @@ const SelectOriginDestination = () => {
       const res = await fetch(
         `https://rsapi.goong.io/Direction?origin=${origin[1]},${origin[0]}&destination=${destination[1]},${destination[0]}&vehicle=${vehicle}&api_key=${GOONG_API_KEY}`,
       );
-      console.log("response", res);
+      console.log('response', res);
       const data = await res.json();
       if (data?.routes?.length > 0) {
         const route = data.routes[0];
@@ -752,7 +813,7 @@ const SelectOriginDestination = () => {
             car: vehicleFuelType === 'electric' ? 50 : 192,
             bike: vehicleFuelType === 'electric' ? 10 : 72,
             truck: vehicleFuelType === 'electric' ? 60 : 281,
-            taxi: vehicleFuelType === 'electric' ? 30 : 89,  // bus
+            taxi: vehicleFuelType === 'electric' ? 30 : 89, // bus
           };
           const estimates = distanceKm * factor[selectedVehicle];
           setCo2Estimates(estimates);

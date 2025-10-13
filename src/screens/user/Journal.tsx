@@ -36,6 +36,7 @@ const JournalScreen = ({ navigation }: any) => {
       setRefreshing(false);
     }
   }, [fetchTrips]);
+  console.log('trips', trips);
 
   const renderItem = ({ item, index, section }: any) => {
     const isLastItem =
