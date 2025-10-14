@@ -167,7 +167,7 @@
   "current_password": "Mật khẩu hiện tại",
   "new_password": "Mật khẩu mới",
   "confirm_new_password": "Nhập lại mật khẩu mới",
-  "forgot_password": "Bạn quên mật khẩu ư?",
+  "forgot_password": "Bạn quên mật khẩu ư",
   "forgot_password_email_only": "Chức năng quên mật khẩu chỉ áp dụng cho tài khoản đăng nhập bằng email. Vui lòng cập nhật email trước khi thực hiện.",
   "change_password_success": "Thay đổi mật khẩu thành công",
   "change_password_failed": "Thay đổi mật khẩu thất bại, vui lòng thử lại!",

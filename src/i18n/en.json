@@ -168,7 +168,7 @@
   "current_password": "Current password",
   "new_password": "New password",
   "confirm_new_password": "Confirm new password",
-  "forgot_password": "Forgot your password?",
+  "forgot_password": "Forgot your password",
   "forgot_password_email_only": "The forgot password function is only available for accounts logged in via email. Please update your email before proceeding.",
   "change_password_success": "Password changed successfully",
   "change_password_failed": "Failed to change password, please try again!",

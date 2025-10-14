@@ -4,6 +4,7 @@ apply plugin: "com.facebook.react"
 
 project.ext.react = [
     entryFile: "index.js",
+    enableHermes: true,
     nodeExecutableAndArgs: [project.hasProperty("NODE_BINARY") ? project.getProperty("NODE_BINARY") : "node"]
 ]
 
@@ -73,6 +74,11 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+    implementation project(':react-native-background-geolocation')
+    implementation 'com.mapbox.maps:android-ndk27:11.15.3'
+
+    def hermesEnabled = project.ext.react.get("enableHermes", false)
+
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

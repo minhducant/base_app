@@ -1,11 +1,40 @@
 buildscript {
     ext {
+         RNMapboxMapsImpl = "mapbox"
+
+        useCustomMapbox = false
+
+        if (System.getenv('CI_MAP_IMPL').equals('mapbox')) {
+            RNMapboxMapsImpl = "mapbox"
+            RNMapboxMapsVersion = '10.19.0'
+            kotlinVersion = '1.6.21'
+        } else if (System.getenv('CI_MAP_IMPL').equals('mapbox11')) {
+            // Using default v11 version from main library
+            RNMapboxMapsImpl = "mapbox"
+        } else if (project.hasProperty('RNMBX10') && project.getProperty('RNMBX10').toBoolean()) {
+            RNMapboxMapsVersion = '10.19.0'
+        }
+
         buildToolsVersion = "36.0.0"
         minSdkVersion = 24
         compileSdkVersion = 36
         targetSdkVersion = 36
         ndkVersion = "27.1.12297006"
         kotlinVersion = "2.1.20"
+        playServicesLocationVersion = "21.3.0" 
+        appCompatVersion = "1.6.1"
+        removeBackgroundGeolocationDebugSoundsInRelease = false
+        if (useCustomMapbox) {
+            RNMapboxMapsLibs = {
+                implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:9.7.1'
+                implementation 'com.mapbox.mapboxsdk:mapbox-sdk-services:5.8.0'
+                implementation 'com.mapbox.mapboxsdk:mapbox-sdk-turf:5.8.0'
+                implementation 'com.mapbox.mapboxsdk:mapbox-android-gestures:0.7.0'
+                implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v9:0.8.0'
+                implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-localization-v9:0.14.0'
+                implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-markerview-v9:0.4.0'
+            }
+        }
     }
     repositories {
         google()
@@ -25,6 +54,13 @@ allprojects {
         jcenter()
         maven {
             url "$rootDir/../node_modules/react-native/android"
+        }
+        // Required for react-native-background-geolocation
+        maven { url("${project(':react-native-background-geolocation').projectDir}/libs") }
+        // Required for react-native-background-fetch
+        maven { url("${project(':react-native-background-fetch').projectDir}/libs") }
+        maven {
+            url 'https://api.mapbox.com/downloads/v2/releases/maven'
         }
     }
 }
