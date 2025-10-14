@@ -10,6 +10,7 @@ import { setIsLoading } from '@stores/action';
 interface UseReportProps {
   startDate?: string | null;
   endDate?: string | null;
+  type?: string | null;
 }
 
 export const useReport = ({ startDate, endDate }: UseReportProps = {}) => {
@@ -33,7 +34,7 @@ export const useReport = ({ startDate, endDate }: UseReportProps = {}) => {
   }, []);
 
   const getReport = useCallback(
-    async (sDate?: string, eDate?: string) => {
+    async (sDate?: string, eDate?: string, type?: string) => {
       try {
         if (!sDate || !eDate) {
           setReportData({});
@@ -43,6 +44,7 @@ export const useReport = ({ startDate, endDate }: UseReportProps = {}) => {
         const params = {
           start_date: sDate || defaultStart,
           end_date: eDate || defaultEnd,
+          type: type || 'personal',
         };
         const res: any = await TripApi.getReport(params);
         if (res?.code === 200) {
@@ -68,6 +70,7 @@ export const useReport = ({ startDate, endDate }: UseReportProps = {}) => {
       }
     }, [getReport, startDate, endDate]),
   );
+
   return {
     reportData,
     setReportData,

@@ -7,6 +7,7 @@ import color from '@styles/color';
 import themeStyle from '@styles/theme.style';
 import { useReport } from '@hooks/useReport';
 import { userStyle } from '@styles/user.style';
+import SwitchButton from '@components/home/SwitchButton';
 import { RangeCalendar } from '@components/home/RangeCalendar';
 import HeaderBackStatusBar from '@components/header/headerWithTitle';
 
@@ -26,21 +27,23 @@ const ReportScreen = () => {
   const lastDay = formatLocalDate(
     new Date(now.getFullYear(), now.getMonth() + 1, 0),
   );
+  const [type, setType] = useState<'personal' | 'business'>('personal');
   const [startDate, setStartDate] = useState<string | null>(firstDay);
   const [endDate, setEndDate] = useState<string | null>(lastDay);
   const { reportData, refetch, setReportData } = useReport({
     startDate,
     endDate,
+    type,
   });
   const { total = 0, vehicles = {} } = reportData?.by_vehicle || {};
 
   useEffect(() => {
     if (startDate && endDate) {
-      refetch(startDate, endDate);
+      refetch(startDate, endDate, type);
     } else {
-      setReportData({})
+      setReportData({});
     }
-  }, [startDate, endDate]);
+  }, [startDate, endDate, type]);
 
   const getAllDatesInRange = (start: string | any, end: string | any) => {
     const dates: string[] = [];
@@ -72,6 +75,8 @@ const ReportScreen = () => {
 
   const VehicleItem = ({ name, value, total }: any) => {
     const percent = total > 0 ? Math.round((value / total) * 100) : 0;
+    const displayValue = Number.isInteger(value) ? value : value.toFixed(2);
+
     return (
       <View style={userStyle.itemReport}>
         <View style={userStyle.textReport}>
@@ -79,7 +84,7 @@ const ReportScreen = () => {
           <Text style={userStyle.nameReport}>{t(name)}</Text>
           <Text style={userStyle.percentReport}>{percent}%</Text>
         </View>
-        <Text style={userStyle.valueReport}>{value.toFixed(2)} g</Text>
+        <Text style={userStyle.valueReport}>{displayValue} g</Text>
       </View>
     );
   };
@@ -87,6 +92,7 @@ const ReportScreen = () => {
   return (
     <View style={userStyle.container}>
       <HeaderBackStatusBar title={t('emission_report')} />
+      <SwitchButton type={type} onChange={setType} />
       <RangeCalendar
         endDate={endDate}
         startDate={startDate}
@@ -103,7 +109,7 @@ const ReportScreen = () => {
             isAnimated
             showDataPointOnFocus
             data={lineData}
-            height={250}
+            height={220}
             spacing={44}
             initialSpacing={22}
             color1={color.MAIN}
@@ -148,7 +154,9 @@ const ReportScreen = () => {
           <View style={userStyle.textReport}>
             <Text style={userStyle.nameReport}>{t('total')}</Text>
           </View>
-          <Text style={userStyle.valueReport}>{total.toFixed(2)} g</Text>
+          <Text style={userStyle.valueReport}>
+            {Number.isInteger(total) ? total : total.toFixed(2)} g
+          </Text>
         </View>
       </ScrollView>
     </View>

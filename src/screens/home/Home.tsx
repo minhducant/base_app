@@ -26,7 +26,6 @@ import {
 import { useGoal } from '@hooks/useGoal';
 import { useWeather } from '@hooks/useWeather';
 import { homeStyle } from '@styles/home.style';
-import TripModal from '@components/modal/TripModal';
 import ProgressBar from '@components/home/progressBar';
 import EcoMoveModal from '@components/modal/EcoMoveModal';
 import { useLocationPermission } from '@utils/permissions';

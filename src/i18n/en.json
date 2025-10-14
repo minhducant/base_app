@@ -194,5 +194,7 @@
   "total": "Total",
   "update_emission_reduction_goal": "Update emission reduction goal",
   "update_goal": "Update goal",
-  "update_goal_success": "Goal updated successfully"
+  "update_goal_success": "Goal updated successfully",
+  "business": "Business",
+  "personal": "Personal"
 }

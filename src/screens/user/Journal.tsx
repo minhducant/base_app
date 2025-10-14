@@ -147,13 +147,13 @@ const JournalScreen = ({ navigation }: any) => {
             </View>
           )}
           renderItem={renderItem}
-          onEndReached={() => {
-            if (hasMore && !loading) {
-              fetchTrips({ loadMore: true });
-            }
-          }}
+          // onEndReached={() => {
+          //   if (hasMore && !loading) {
+          //     fetchTrips({ loadMore: true });
+          //   }
+          // }}
           onEndReachedThreshold={0.3}
-          ListFooterComponent={renderFooter}
+          // ListFooterComponent={renderFooter}
           contentContainerStyle={
             trips.length === 0 ? { flex: 1 } : { paddingBottom: 20 }
           }

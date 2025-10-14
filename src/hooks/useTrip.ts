@@ -29,7 +29,7 @@ export const useTrip = () => {
         if (res?.code === 200) {
           const newData = res?.data?.result || [];
           if (loadMore) {
-            setTrips(prev => [...prev, ...newData]);
+            setTrips(trips.concat(newData));
           } else {
             setTrips(newData);
           }

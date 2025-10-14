@@ -193,5 +193,7 @@
   "total": "Tổng cộng",
   "update_emission_reduction_goal": "Cập nhật mục tiêu giảm phát thải",
   "update_goal": "Cập nhật mục tiêu",
-  "update_goal_success": "Cập nhật mục tiêu thành công"
+  "update_goal_success": "Cập nhật mục tiêu thành công",
+  "business": "Doanh nghiệp",
+  "personal": "Cá nhân"
 }

@@ -204,8 +204,8 @@ const SelectOriginDestination = () => {
 
     const onLocation = BackgroundGeolocation.onLocation(location => {
       const coords: [number, number] = [
-        location.coords.longitude,
-        location.coords.latitude,
+        location?.coords?.longitude,
+        location?.coords?.latitude,
       ];
       setCurrentLocation(coords);
 
