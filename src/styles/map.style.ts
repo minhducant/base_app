@@ -24,6 +24,7 @@ export const mapStyle: any = {
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowRadius: 4,
+    // height: 70,
     shadowOffset: { width: 0, height: 2 },
   },
   resultCol: {
@@ -123,7 +124,7 @@ export const mapStyle: any = {
     paddingBottom: normalize(8),
   },
   text: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: themeStyle.FONT_FAMILY,
     color: color.BLACK,
   } as ViewStyle,

@@ -361,7 +361,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.ecomove.giz;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ecomove.vna;
 				PRODUCT_NAME = EcoMove;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -395,7 +395,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.ecomove.giz;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ecomove.vna;
 				PRODUCT_NAME = EcoMove;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;

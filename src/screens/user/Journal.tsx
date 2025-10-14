@@ -76,7 +76,7 @@ const JournalScreen = ({ navigation }: any) => {
             <View>
               <Text style={userStyle.infoLabel}>{t('distance')}</Text>
               <Text style={[userStyle.infoValue, { color: color.MAIN }]}>
-                {convertMetersToKm(item?.distance, true)}
+                {item?.distance_text || 0}
               </Text>
             </View>
           </View>
@@ -90,7 +90,7 @@ const JournalScreen = ({ navigation }: any) => {
             <View>
               <Text style={userStyle.infoLabel}>{t('duration')}</Text>
               <Text style={[userStyle.infoValue, { color: '#E9A100' }]}>
-                {item?.duration || 0} {t('minute')}
+                {item?.duration_text || 0}
               </Text>
             </View>
           </View>

@@ -41,13 +41,22 @@ const SelectOriginDestination = () => {
   const [currentTripId, setCurrentTripId] = useState<string | null>(null);
   const autoStopRef = useRef(false); // Thêm ref để tránh auto-stop multiple times
 
+  const [tripType, setTripType] = useState<'personal' | 'business'>('personal');
+
+  ///
+  const distanceRef = useRef(0);
+  const co2Ref = useRef(0);
+  const distanceTextRef = useRef('');
+
   // them xe
   const [vehicleFuelType, setVehicleFuelType] = useState<
     'gasoline' | 'electric'
   >('gasoline');
 
   ///
-  const [timerInterval, setTimerInterval] = useState<ReturnType<typeof setInterval> | null>(null);
+  const [timerInterval, setTimerInterval] = useState<ReturnType<
+    typeof setInterval
+  > | null>(null);
 
   // Trip state
   const [origin, setOrigin] = useState<[number, number] | null>(null);
@@ -91,6 +100,10 @@ const SelectOriginDestination = () => {
 
   // Helper: Reset all state to initial
   const resetAllState = () => {
+    // Reset refs
+    distanceRef.current = 0;
+    co2Ref.current = 0;
+    distanceTextRef.current = '';
     setOrigin(null);
     setDestination(null);
     setOriginText('');
@@ -181,6 +194,17 @@ const SelectOriginDestination = () => {
           added = calculateDistance(prevLocationRef.current, coords);
         }
         prevLocationRef.current = coords;
+
+        // Cập nhật refs
+        distanceRef.current += added;
+        const co2 = distanceRef.current * factor[selectedVehicle];
+        co2Ref.current = co2;
+        distanceTextRef.current = `${distanceRef.current.toFixed(2)} km`;
+        // Set state từ refs
+        setTotalDistance(distanceRef.current);
+        setCo2Emitted(co2Ref.current);
+        setCo2Estimates(co2Ref.current);
+        setDistanceText(distanceTextRef.current);
 
         // Cộng dồn quãng đường
         setTotalDistance(prev => {
@@ -307,6 +331,8 @@ const SelectOriginDestination = () => {
           status: 'ended',
           distance: finalDistance,
           co2: finalCO2,
+          duration_text: durationText,
+          distance_text: distanceText,
         });
 
         if (res?.code === 200) {
@@ -560,12 +586,12 @@ const SelectOriginDestination = () => {
       const finalDistance = totalDistance;
       const finalCO2 = co2Emitted;
 
-
       const res: any = await TripApi.updateTrip(tripId, {
         endedAt: new Date(),
         status: 'ended',
-        distance: distanceText ? parseFloat(distanceText) : finalDistance,
+        duration_text: durationText,
         co2: finalCO2,
+        distance_text: distanceText,
         end_location: finalPos, // Add final location to trip data
       });
 
@@ -615,6 +641,9 @@ const SelectOriginDestination = () => {
       BackgroundGeolocation.stop();
       Geolocation.stopObserving();
     }
+    distanceRef.current = 0;
+    co2Ref.current = 0;
+    distanceTextRef.current = '';
     resetAllState();
   };
 
@@ -1146,17 +1175,88 @@ const SelectOriginDestination = () => {
                     thumbColor={
                       vehicleFuelType === 'electric' ? color.MAIN : '#ccc'
                     }
+                    style={{ transform: [{ scaleX: .8 }, { scaleY: .8 }] }}
                     trackColor={{ false: '#ccc', true: color.MAIN }}
                     disabled={isTracking} // Disable khi đang tracking
                   />
                 </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    borderRadius: 6,
+                    overflow: 'hidden',
+                    borderWidth: 1,
+                    borderColor: color.MAIN,
+                    width: '100%', // Make it full width of parent
+                  }}
+                >
+                  <TouchableOpacity
+                    disabled={isTracking}
+                    style={{
+                      flex: 1,
+                      backgroundColor:
+                        tripType === 'personal' ? color.MAIN : '#fff',
+                      paddingVertical: 5,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    onPress={() => setTripType('personal')}
+                  >
+                    {/* <IconLibrary
+                      library="MaterialCommunityIcons"
+                      name="account"
+                      size={10}
+                      color={tripType === 'personal' ? '#fff' : color.MAIN}
+                      style={{ marginRight: 2 }}
+                    /> */}
+                    <Text
+                      style={{
+                        color: tripType === 'personal' ? '#fff' : color.MAIN,
+                        fontSize: 11,
+                      }}
+                    >
+                      Personal
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    disabled={isTracking}
+                    style={{
+                      flex: 1,
+                      backgroundColor:
+                        tripType === 'business' ? color.MAIN : '#fff',
+                      paddingVertical: 5,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    onPress={() => setTripType('business')}
+                  >
+                    {/* <IconLibrary
+                      library="MaterialCommunityIcons"
+                      name="briefcase"
+                      size={10}
+                      color={tripType === 'business' ? '#fff' : color.MAIN}
+                      style={{ marginRight: 2 }}
+                    /> */}
+                    <Text
+                      style={{
+                        color: tripType === 'business' ? '#fff' : color.MAIN,
+                        fontSize: 11,
+                      }}
+                    >
+                      Business
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
+
             <View style={styles.resultCol}>
               <IconLibrary
                 library="MaterialIcons"
                 name="straighten"
-                size={22}
+                size={13}
                 color={color.MAIN}
                 style={{ marginBottom: 4 }}
               />
@@ -1173,7 +1273,7 @@ const SelectOriginDestination = () => {
               <IconLibrary
                 library="MaterialIcons"
                 name="schedule"
-                size={22}
+                size={13}
                 color={color.ORANGE}
                 style={{ marginBottom: 4 }}
               />
@@ -1193,7 +1293,7 @@ const SelectOriginDestination = () => {
               <IconLibrary
                 library="MaterialCommunityIcons"
                 name="cloud-outline"
-                size={22}
+                size={13}
                 color={co2Estimates === 0 ? color.MAIN : color.CRIMSON}
                 style={{ marginBottom: 4 }}
               />
