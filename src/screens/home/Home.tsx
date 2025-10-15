@@ -8,7 +8,6 @@ import {
   View,
   Text,
   Image,
-  Alert,
   Animated,
   ScrollView,
   RefreshControl,
@@ -122,7 +121,12 @@ export default function HomeScreen({ navigation }: any) {
               </View>
               <Text style={homeStyle.txtActionItem}>{t('chat')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={homeStyle.actionItem}>
+            <TouchableOpacity
+              style={homeStyle.actionItem}
+              onPress={() =>
+                navigation.navigate('NoFooter', { screen: 'WaterPlantScreen' })
+              }
+            >
               <View style={homeStyle.iconActionItem}>
                 <IconGame />
               </View>
@@ -168,7 +172,11 @@ export default function HomeScreen({ navigation }: any) {
               <Text style={homeStyle.surveyDesc}>
                 {t('always_listen_support')}
               </Text>
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate('NoFooter', { screen: 'SurveyScreen' })
+                }
+              >
                 <Text style={homeStyle.surveyLink}>{t('do_survey_now')}</Text>
               </TouchableOpacity>
             </View>

@@ -1,6 +1,6 @@
 export const API_PREFIX = '/api/v1';
 export const MAIN_DOMAIN = 'http://172.104.189.80:3003';
-// export const MAIN_DOMAIN = 'http://192.168.1.205:3003';
+// export const MAIN_DOMAIN = 'http://192.168.1.224:3003';
 
 export const ApiUrl = {
   auth: {
@@ -31,5 +31,9 @@ export const ApiUrl = {
   goal: {
     get_goal: '/goal',
     create_goal: '/goal',
+  },
+  survey: {
+    send_survey: '/survey',
+    get_rating: "/survey/rating-stats",
   },
 };

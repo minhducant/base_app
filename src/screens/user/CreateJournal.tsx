@@ -31,6 +31,7 @@ const CreateJournalScreen = ({ navigation }: any) => {
   const [distance, setDistance] = useState(0);
   const [distanceText, setDistanceText] = useState('');
   const [destinationText, setDestinationText] = useState('');
+  const [selectedType, setSelectedType] = useState('personal');
   const [selectedVehicle, setSelectedVehicle] = useState('bike');
   const [selectedFuelType, setSelectedFuelType] = useState('gasoline');
   const [destinationQuery, setDestinationQuery] = useState('');
@@ -56,6 +57,11 @@ const CreateJournalScreen = ({ navigation }: any) => {
   const fuelTypes = [
     { key: 'gasoline', label: t('gasoline'), icon: '⛽' },
     { key: 'electric', label: t('electric'), icon: '🔋' },
+  ];
+
+  const tripType = [
+    { key: 'personal', label: t('personal') },
+    { key: 'business', label: t('business') },
   ];
 
   useEffect(() => {
@@ -170,6 +176,7 @@ const CreateJournalScreen = ({ navigation }: any) => {
       origin,
       destination,
       distance,
+      type: selectedType,
       origin_text: originText,
       destination_text: destinationText,
       vehicle: selectedVehicle,
@@ -306,6 +313,23 @@ const CreateJournalScreen = ({ navigation }: any) => {
               <Text style={userStyle.optionText}>
                 {t(fuel.label)} {t(fuel.icon)}
               </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <Text style={userStyle.labelJournal}>{t('select_trip_type')}</Text>
+        <View style={userStyle.optionContainer}>
+          {tripType.map(type => (
+            <TouchableOpacity
+              key={type.key}
+              style={[
+                userStyle.optionItemFuel,
+                selectedType === type.key && userStyle.selectedOption,
+              ]}
+              onPress={() => {
+                setSelectedType(type.key as any);
+              }}
+            >
+              <Text style={userStyle.optionText}>{t(type.label)}</Text>
             </TouchableOpacity>
           ))}
         </View>

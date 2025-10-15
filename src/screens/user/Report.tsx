@@ -7,7 +7,7 @@ import color from '@styles/color';
 import themeStyle from '@styles/theme.style';
 import { useReport } from '@hooks/useReport';
 import { userStyle } from '@styles/user.style';
-import SwitchButton from '@components/home/SwitchButton';
+import SwitchReport from '@components/home/SwitchReport';
 import { RangeCalendar } from '@components/home/RangeCalendar';
 import HeaderBackStatusBar from '@components/header/headerWithTitle';
 
@@ -92,7 +92,7 @@ const ReportScreen = () => {
   return (
     <View style={userStyle.container}>
       <HeaderBackStatusBar title={t('emission_report')} />
-      <SwitchButton type={type} onChange={setType} />
+      <SwitchReport type={type} onChange={setType} />
       <RangeCalendar
         endDate={endDate}
         startDate={startDate}

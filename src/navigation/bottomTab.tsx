@@ -12,10 +12,12 @@ import { navigationStyle } from '@styles/navigation.style';
 import { IconHome, IconMap, IconUser } from '@assets/icons';
 
 import GoalScreen from '@screens/user/Goal';
+import SurveyScreen from '@screens/home/Survey';
 import ReportScreen from '@screens/user/Report';
 import JournalScreen from '@screens/user/Journal';
 import ProfileScreen from '@screens/user/Profile';
 import SettingsScreen from '@screens/user/Settings';
+import WaterPlantScreen from '@screens/home/WaterPlant';
 import CreateJournalScreen from '@screens/user/CreateJournal';
 import ChangePasswordScreen from '@screens/user/ChangePassword';
 import ChangeLanguageScreen from '@screens/user/ChangeLanguage';
@@ -30,10 +32,12 @@ const screenOptions = { headerShown: false };
 function NoFooter() {
   const screens: any = [
     GoalScreen,
+    SurveyScreen,
     ProfileScreen,
     ReportScreen,
     JournalScreen,
     SettingsScreen,
+    WaterPlantScreen,
     CreateJournalScreen,
     ChangePasswordScreen,
     SelectLocationScreen,
