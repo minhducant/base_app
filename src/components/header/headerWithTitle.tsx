@@ -1,15 +1,8 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  Platform,
-  StatusBar,
-  StyleSheet,
-  SafeAreaView,
-  TouchableOpacity,
-} from 'react-native';
 import normalize from 'react-native-normalize';
 import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
 import Colors from '@styles/color';
 import theme from '@styles/theme.style';
@@ -54,59 +47,55 @@ export default function HeaderBackStatusBar({
       : null;
   };
 
-
-
   const onGoHome = () => {
     navigation.navigate('HomeScreen');
   };
 
   return (
-    <>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.WHITE} />
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <View style={styles.upperHeader}>
-            <View style={styles.viewBack}>
-              {hasLeft && (
-                <TouchableOpacity onPress={_onGoBack}>
-                  <IconLibrary
-                    library="Ionicons"
-                    name="chevron-back"
-                    size={25}
-                    color={Colors.WHITE}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-            <Text style={styles.title} numberOfLines={1}>
-              {title}
-            </Text>
-            {hasRight ? (
-              <TouchableOpacity onPress={onGoHome} style={styles.viewBack}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.header}>
+        <View style={styles.upperHeader}>
+          <View style={styles.viewBack}>
+            {hasLeft && (
+              <TouchableOpacity onPress={_onGoBack}>
                 <IconLibrary
-                  library="AntDesign"
-                  name="home"
-                  size={20}
+                  library="Ionicons"
+                  name="chevron-back"
+                  size={25}
                   color={Colors.WHITE}
                 />
               </TouchableOpacity>
-            ): (<View style={styles.viewBack}/>)}
+            )}
           </View>
+          <Text style={styles.title} numberOfLines={1}>
+            {title}
+          </Text>
+          {hasRight ? (
+            <TouchableOpacity onPress={onGoHome} style={styles.viewBack}>
+              <IconLibrary
+                library="AntDesign"
+                name="home"
+                size={20}
+                color={Colors.WHITE}
+              />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.viewBack} />
+          )}
         </View>
-      </SafeAreaView>
-    </>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: Colors.MAIN,
+    paddingTop: 0,
   },
   header: {
     backgroundColor: Colors.MAIN,
     paddingHorizontal: normalize(16),
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    // paddingBottom: normalize(10),
   },
   upperHeader: {
     flexDirection: 'row',

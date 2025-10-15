@@ -1,5 +1,6 @@
-import { Text } from 'react-native';
+import { Text, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import normalize from 'react-native-normalize';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
@@ -37,7 +38,6 @@ function NoFooter() {
     ChangePasswordScreen,
     SelectLocationScreen,
     ChangeLanguageScreen,
-    SelectOriginDestination,
   ];
 
   return (
@@ -64,7 +64,7 @@ function BottomTabs() {
       icon: IconHome,
     },
     {
-      name: 'HistorySreen',
+      name: 'MapSreen',
       component: SelectOriginDestination,
       label: t('map'),
       icon: IconMap,
@@ -85,6 +85,10 @@ function BottomTabs() {
         headerShown: false,
         tabBarActiveTintColor: color.MAIN,
         tabBarInactiveTintColor: color.GRAYCHATEAU,
+        tabBarStyle: {
+          paddingBottom: Platform.OS === 'android' ? normalize(8) : 0,
+          height: Platform.OS === 'android' ? normalize(55) : normalize(75),
+        },
       })}
     >
       {tabScreens.map(tab => (
