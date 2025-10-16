@@ -337,6 +337,8 @@ const SelectOriginDestination = () => {
 
         if (res?.code === 200) {
           showMessage.success('Đã đến đích! Kết thúc chuyến đi.');
+          setTotalDistance(finalDistance);
+          setCo2Emitted(finalCO2);
         } else {
           showMessage.fail('Lỗi khi tự động kết thúc chuyến đi');
         }
@@ -1146,7 +1148,7 @@ const SelectOriginDestination = () => {
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    marginBottom: 4,
+                    marginBottom: 4, 
                   }}
                 >
                   <IconLibrary
